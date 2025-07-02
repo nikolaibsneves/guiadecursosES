@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guia de Cursos Superiores no ES - Com Filtros</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f9ff;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #003366;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main {
+      padding: 2rem;
+    }
+
+    .filtros {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .filtros input,
+    .filtros select {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 1rem;
+    }
+
+    .card-content h2 {
+      font-size: 1.1rem;
+      margin: 0 0 0.5rem;
+    }
+
+    .card-content p {
+      font-size: 0.95rem;
+      margin: 0;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      background-color: rgba(0,0,0,0.8);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 2rem;
+      max-width: 600px;
+      border-radius: 10px;
+      position: relative;
+    }
+
+    .close {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    iframe {
+      width: 100%;
+      height: 315px;
+      border: none;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      iframe {
+        height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="site-title">Guia de Cursos Superiores Gratuitos no ES</h1>
+  </header>
+
+  <main>
+    <section class="filtros" aria-label="Filtros de busca">
+      <input type="text" id="busca" placeholder="Buscar por nome do curso" />
+      <select id="instituicao">
+        <option value="">Todas as instituições</option>
+        <option value="UFES">UFES</option>
+        <option value="IFES">IFES</option>
+      </select>
+      <select id="tipo">
+        <option value="">Todos os tipos</option>
+        <option value="Licenciatura">Licenciatura</option>
+        <option value="Bacharelado">Bacharelado</option>
+      </select>
+      <select id="campus">
+        <option value="">Todos os campi</option>
+      </select>
+      <select id="duracao">
+        <option value="">Todas as durações</option>
+        <option value="6">6 semestres</option>
+        <option value="8">8 semestres</option>
+        <option value="10">10 semestres</option>
+      </select>
+    </section>
+
+    <section id="cards" class="card-container" aria-label="Lista de cursos"></section>
+  </main>
+
+  <div id="modals"></div>
+
+  <script>
+    const cursos = [
+      {
+        "Curso": "Física",
+        "Tipo": "Licenciatura",
+        "Horário": "Noturno",
+        "Semestres": 8,
+        "Forma de acesso": "ENEM via SiSU",
+        "Campus": "Goiabeiras (Vitória)",
+        "Instituicao": "UFES",
+        "Página do curso": "https://fisica.ufes.br/",
+        "VideoID": "INAuXvvglAA"
+      },
+      {
+        "Curso": "Administração",
+        "Tipo": "Bacharelado",
+        "Horário": "Noturno",
+        "Semestres": 8,
+        "Forma de acesso": "ENEM via SiSU",
+        "Campus": "Goiabeiras (Vitória)",
+        "Instituicao": "UFES",
+        "Página do curso": "https://administracao.ufes.br/",
+        "VideoID": "Z9FwnAfHPhY"
+      }
+    ];
+
+    const cardsContainer = document.getElementById('cards');
+    const modalsContainer = document.getElementById('modals');
+    const campusSelect = document.getElementById('campus');
+
+    // Preenche opções únicas de campus no filtro
+    const campi = [...new Set(cursos.map(c => c.Campus))];
+    campi.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      campusSelect.appendChild(opt);
+    });
+
+    function criarCard(curso, index) {
+      const temVideo = curso.VideoID && curso.VideoID.trim() !== "";
+      const titulo = `${temVideo ? "🎥 " : ""}${curso.Curso} - ${curso.Tipo} (${curso.Campus})`;
+
+      return `
+        <article class="card" onclick="abrirModal('modal${index}', ${index}, '${curso.VideoID}')" role="button" tabindex="0" aria-labelledby="titulo${index}">
+          <img src="https://via.placeholder.com/300x140?text=${encodeURIComponent(curso.Curso)}" alt="Imagem ilustrativa do curso ${curso.Curso}">
+          <div class="card-content">
+            <h2 id="titulo${index}">${titulo}</h2>
+            <p>Duração: ${curso.Semestres} semestres</p>
+          </div>
+        </article>
+      `;
+    }
+
+    function criarModal(curso, index) {
+      const temVideo = curso.VideoID && curso.VideoID.trim() !== "";
+      const embed = temVideo
+        ? `<iframe id="iframe-${index}" src="" data-src="https://www.youtube.com/embed/${curso.VideoID}" title="Vídeo de apresentação do curso ${curso.Curso}" allowfullscreen></iframe>`
+        : "";
+
+      return `
+        <div id="modal${index}" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo${index}">
+          <div class="modal-content">
+            <span class="close" onclick="fecharModal('modal${index}', ${index})" aria-label="Fechar">×</span>
+            <h3 id="modalTitulo${index}">${curso.Curso} - ${curso.Tipo}</h3>
+            <p><strong>Campus:</strong> ${curso.Campus}</p>
+            <p><strong>Horário:</strong> ${curso.Horário}</p>
+            <p><strong>Duração:</strong> ${curso.Semestres} semestres</p>
+            <p><strong>Forma de acesso:</strong> ${curso["Forma de acesso"]}</p>
+            <p><a href="${curso["Página do curso"]}" target="_blank">Página oficial do curso</a></p>
+            ${embed}
+          </div>
+        </div>
+      `;
+    }
+
+    function abrirModal(id, index, videoID) {
+      const iframe = document.getElementById(`iframe-${index}`);
+      if (iframe && videoID) {
+        iframe.src = iframe.dataset.src;
+      }
+      document.getElementById(id).style.display = "block";
+    }
+
+    function fecharModal(id, index) {
+      const modal = document.getElementById(id);
+      const iframe = document.getElementById(`iframe-${index}`);
+      if (iframe) {
+        iframe.src = "";
+      }
+      modal.style.display = "none";
+    }
+
+    function renderizarCursos(lista) {
+      cardsContainer.innerHTML = "";
+      modalsContainer.innerHTML = "";
+      lista.forEach((curso, index) => {
+        cardsContainer.innerHTML += criarCard(curso, index);
+        modalsContainer.innerHTML += criarModal(curso, index);
+      });
+    }
+
+    function filtrarCursos() {
+      const texto = document.getElementById('busca').value.toLowerCase();
+      const inst = document.getElementById('instituicao').value;
+      const tipo = document.getElementById('tipo').value;
+      const campus = document.getElementById('campus').value;
+      const duracao = document.getElementById('duracao').value;
+
+      const filtrado = cursos.filter(curso => {
+        return (
+          curso.Curso.toLowerCase().includes(texto) &&
+          (inst === "" || curso.Instituicao === inst) &&
+          (tipo === "" || curso.Tipo === tipo) &&
+          (campus === "" || curso.Campus === campus) &&
+          (duracao === "" || curso.Semestres.toString() === duracao)
+        );
+      });
+
+      renderizarCursos(filtrado);
+    }
+
+    // Inicialização
+    renderizarCursos(cursos);
+
+    document.getElementById('busca').addEventListener('input', filtrarCursos);
+    document.getElementById('instituicao').addEventListener('change', filtrarCursos);
+    document.getElementById('tipo').addEventListener('change', filtrarCursos);
+    document.getElementById('campus').addEventListener('change', filtrarCursos);
+    document.getElementById('duracao').addEventListener('change', filtrarCursos);
+
+    window.onclick = function(event) {
+      document.querySelectorAll('.modal').forEach(modal => {
+        if (event.target === modal) {
+          modal.style.display = "none";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
