@@ -190,6 +190,7 @@
       // Ajuste para não incluir o tipo no título, pois já está nos filtros/modal
       const titulo = `${temVideo ? "🎥 " : ""}${curso.Curso}`;
       const campus = curso.Campus || "Não informado";
+      const tipoCurso = curso.Tipo || "Não informado";
       const duracao = curso.Semestres || "?";
 
       return `
