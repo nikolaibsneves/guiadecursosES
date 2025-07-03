@@ -157,6 +157,12 @@
   <div id="modals"></div>
 
   <script>
+    //Declarando variáveis para ajudar no carregamento lazy de cards  
+      let cursos = [];
+      let cursosFiltrados = [];
+      let offset = 0;
+      const limit = 20;
+
     // Função para renderizar os cards e modais na tela
     function renderizarCursos(lista, cardsContainer, modalsContainer) {
       cardsContainer.innerHTML = "";
@@ -167,6 +173,17 @@
       });
     }
 
+    function renderizarMaisCursos() {
+      const cardsContainer = document.getElementById('cards');
+      const modalsContainer = document.getElementById('modals');
+      const proxCursos = cursosFiltrados.slice(offset, offset + limit);
+      proxCursos.forEach((curso, index) => {
+      cardsContainer.innerHTML += criarCard(curso, offset + index);
+      modalsContainer.innerHTML += criarModal(curso, offset + index);
+      });
+    offset += limit;
+    }
+    
     // Função que cria o HTML de um card
     function criarCard(curso, index) {
       const temVideo = curso.VideoID && curso.VideoID.trim() !== "";
@@ -244,8 +261,11 @@ function fecharModal(id, index) {
         }
         return response.json();
       })
-      .then(cursos => { // 'cursos' agora é a lista vinda do arquivo JSON
-        
+      .then(data => { // 'cursos' agora é a lista vinda do arquivo JSON
+        cursos = data;
+        cursosFiltrados = [...cursos];
+        renderizarMaisCursos(); // carrega os primeiros 20
+
         const cardsContainer = document.getElementById('cards');
         const modalsContainer = document.getElementById('modals');
         const campusSelect = document.getElementById('campus');
@@ -267,8 +287,8 @@ function fecharModal(id, index) {
           const campus = document.getElementById('campus').value;
           const duracao = document.getElementById('duracao').value;
 
-          const filtrado = cursos.filter(curso => {
-            const instituicaoCurso = curso.Instituicao || "UFES"; // Garante que a UFES seja considerada
+          cursosFiltrados = cursos.filter(curso => {
+            const instituicaoCurso = curso.Instituicao || "UFES";
             return (
               curso.Curso.toLowerCase().includes(texto) &&
               (inst === "" || instituicaoCurso === inst) &&
@@ -277,11 +297,16 @@ function fecharModal(id, index) {
               (duracao === "" || curso.Semestres.toString() === duracao)
             );
           });
-          renderizarCursos(filtrado, cardsContainer, modalsContainer);
+
+          offset = 0;
+          document.getElementById('cards').innerHTML = "";
+          document.getElementById('modals').innerHTML = "";
+          renderizarMaisCursos();
         }
 
+
         // Renderização inicial
-        renderizarCursos(cursos, cardsContainer, modalsContainer);
+        renderizarMaisCursos(cursos, cardsContainer, modalsContainer);
 
         // Adiciona os 'escutadores' de eventos para os filtros
         document.getElementById('busca').addEventListener('input', filtrarCursos);
@@ -302,6 +327,14 @@ function fecharModal(id, index) {
           fecharModal(modal.id, index);
         }
       });
+    // Chama a geração de cards quando rola té o fim
+    window.addEventListener("scroll", () => {
+      const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+      if (nearBottom && offset < cursosFiltrados.length) {
+        renderizarMaisCursos();
+      }
+    });
+
     }
 </script>
 </body>
