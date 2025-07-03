@@ -120,6 +120,24 @@
         height: 200px;
       }
     }
+     @media (max-width: 600px) { /* Esta é a media query para telas menores que 600px */
+      iframe {
+        height: 200px;
+      }
+
+      .card-container {
+        grid-template-columns: repeat(2, 1fr); /* 2 colunas */
+        gap: 1rem; /* Espaçamento entre os cards */
+      }
+
+      /* Ajustes opcionais para o conteúdo dos cards em telas menores */
+      .card-content h2 {
+        font-size: 1rem; /* Fonte menor para o título */
+      }
+      .card-content p {
+        font-size: 0.85rem; /* Fonte menor para os parágrafos */
+      }
+    }
   </style>
 </head>
 <body>
