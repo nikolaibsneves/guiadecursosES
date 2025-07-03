@@ -213,23 +213,27 @@
     }
 
     // Funções para abrir e fechar o modal, com otimização do vídeo
-    function abrirModal(id, index) {
-        const modal = document.getElementById(id);
-        const iframe = document.getElementById(`iframe-${index}`);
-        if (iframe && iframe.src === "") {
-            iframe.src = iframe.dataset.src; // Carrega o vídeo apenas ao abrir
-        }
-        modal.style.display = "block";
-    }
+function abrirModal(id, index) {
+  const modal = document.getElementById(id);
+  const iframe = document.getElementById(`iframe-${index}`);
+  if (iframe && iframe.src === "") {
+    iframe.src = iframe.dataset.src;
+  }
+  modal.removeAttribute("inert");
+  modal.removeAttribute("aria-hidden");
+  modal.style.display = "block";
+}
 
-    function fecharModal(id, index) {
-        const modal = document.getElementById(id);
-        const iframe = document.getElementById(`iframe-${index}`);
-        if (iframe) {
-            iframe.src = ""; // Remove o src para parar o vídeo
-        }
-        modal.style.display = "none";
-    }
+function fecharModal(id, index) {
+  const modal = document.getElementById(id);
+  const iframe = document.getElementById(`iframe-${index}`);
+  if (iframe) {
+    iframe.src = "";
+  }
+  modal.setAttribute("inert", "");
+  modal.setAttribute("aria-hidden", "true");
+  modal.style.display = "none";
+}
 
     // --- PONTO PRINCIPAL DA MUDANÇA ---
     // Usamos 'fetch' para carregar os dados do arquivo externo
