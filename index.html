@@ -169,7 +169,13 @@
       </select>
     </section>
 
+    <p id="contador-cursos" style="font-weight:bold; margin-bottom:1rem;">Exibindo 0 cursos com os filtros selecionados</p>
+    
     <section id="cards" class="card-container" aria-label="Lista de cursos"></section>
+    <div id="loader" style="text-align:center; display:none; margin:2rem 0; font-style:italic; color:#555;">
+      Carregando mais cursos...
+    </div>
+
   </main>
 
   <div id="modals"></div>
@@ -192,14 +198,23 @@
     }
 
     function renderizarMaisCursos() {
-      const cardsContainer = document.getElementById('cards');
-      const modalsContainer = document.getElementById('modals');
+     const cardsContainer = document.getElementById('cards');
+     const modalsContainer = document.getElementById('modals');
+     const loader = document.getElementById('loader');
+      loader.style.display = "block";
+      
       const proxCursos = cursosFiltrados.slice(offset, offset + limit);
-      proxCursos.forEach((curso, index) => {
-      cardsContainer.innerHTML += criarCard(curso, offset + index);
-      modalsContainer.innerHTML += criarModal(curso, offset + index);
-      });
-    offset += limit;
+      
+      setTimeout(() => {
+        proxCursos.forEach((curso, index) => {
+          cardsContainer.innerHTML += criarCard(curso, offset + index);
+          modalsContainer.innerHTML += criarModal(curso, offset + index);
+        });
+
+        offset += limit;
+        loader.style.display = "none";
+        atualizarContagem();
+      }, 300); // Simula um pequeno atraso para mostrar o loader
     }
     
     // Função que cria o HTML de um card
@@ -223,6 +238,12 @@
       `;
     }
 
+    function atualizarContagem() {
+      const contador = document.getElementById('contador-cursos');
+      contador.textContent = `Exibindo ${Math.min(offset, cursosFiltrados.length)} de ${cursosFiltrados.length} cursos com os filtros selecionados`;
+    }
+
+    
     // Função que cria o HTML de um modal
     function criarModal(curso, index) {
         const temVideo = curso.VideoID && curso.VideoID.trim() !== "";
@@ -321,6 +342,7 @@ function fecharModal(id, index) {
           document.getElementById('cards').innerHTML = "";
           document.getElementById('modals').innerHTML = "";
           renderizarMaisCursos();
+          atualizarContagem();
         }
 
 
