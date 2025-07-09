@@ -163,8 +163,8 @@
       </select>
       <select id="duracao">
         <option value="">Todas as durações</option>
-        <option value="6">6 semestres</option>
         <option value="8">8 semestres</option>
+        <option value="9">9 semestres</option>
         <option value="10">10 semestres</option>
       </select>
     </section>
@@ -186,6 +186,7 @@
       let cursosFiltrados = [];
       let offset = 0;
       const limit = 20;
+      let carregando = false;
 
     // Função para renderizar os cards e modais na tela
     function renderizarCursos(lista, cardsContainer, modalsContainer) {
@@ -198,24 +199,28 @@
     }
 
     function renderizarMaisCursos() {
-     const cardsContainer = document.getElementById('cards');
-     const modalsContainer = document.getElementById('modals');
-     const loader = document.getElementById('loader');
+      if (carregando) return; // previne múltiplas execuções
+      carregando = true;
+    
+      const cardsContainer = document.getElementById('cards');
+      const modalsContainer = document.getElementById('modals');
+      const loader = document.getElementById('loader');
       loader.style.display = "block";
-      
+    
       const proxCursos = cursosFiltrados.slice(offset, offset + limit);
-      
+    
       setTimeout(() => {
         proxCursos.forEach((curso, i) => {
-          const idx = offset + i; // índice único global baseado no deslocamento
+          const idx = offset + i;
           cardsContainer.innerHTML += criarCard(curso, idx);
           modalsContainer.innerHTML += criarModal(curso, idx);
         });
-
+    
         offset += limit;
         loader.style.display = "none";
         atualizarContagem();
-      }, 300); // Simula um pequeno atraso para mostrar o loader
+        carregando = false; // libera a flag
+      }, 300);
     }
     
     // Função que cria o HTML de um card
@@ -342,6 +347,7 @@ function fecharModal(id, index) {
           offset = 0;
           document.getElementById('cards').innerHTML = "";
           document.getElementById('modals').innerHTML = "";
+          carregando = false;
           renderizarMaisCursos();
           atualizarContagem();
         }
