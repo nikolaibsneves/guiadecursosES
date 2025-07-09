@@ -207,8 +207,9 @@
       
       setTimeout(() => {
         proxCursos.forEach((curso, index) => {
-          cardsContainer.innerHTML += criarCard(curso, offset + index);
-          modalsContainer.innerHTML += criarModal(curso, offset + index);
+          const idx = offset + i; // índice único global baseado no deslocamento
+          cardsContainer.innerHTML += criarCard(curso, idx);
+          modalsContainer.innerHTML += criarModal(curso, idx);
         });
 
         offset += limit;
