@@ -206,7 +206,7 @@
       const proxCursos = cursosFiltrados.slice(offset, offset + limit);
       
       setTimeout(() => {
-        proxCursos.forEach((curso, index) => {
+        proxCursos.forEach((curso, i) => {
           const idx = offset + i; // índice único global baseado no deslocamento
           cardsContainer.innerHTML += criarCard(curso, idx);
           modalsContainer.innerHTML += criarModal(curso, idx);
