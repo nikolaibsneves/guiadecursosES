@@ -345,10 +345,7 @@ function fecharModal(id, index) {
           atualizarContagem();
         }
 
-
-        // Renderização inicial
-        renderizarMaisCursos(cursos, cardsContainer, modalsContainer);
-
+        
         // Adiciona os 'escutadores' de eventos para os filtros
         document.getElementById('busca').addEventListener('input', filtrarCursos);
         document.getElementById('instituicao').addEventListener('change', filtrarCursos);
@@ -368,6 +365,8 @@ function fecharModal(id, index) {
           fecharModal(modal.id, index);
         }
       });
+    };
+    
     // Chama a geração de cards quando rola té o fim
     window.addEventListener("scroll", () => {
       const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
@@ -375,8 +374,7 @@ function fecharModal(id, index) {
         renderizarMaisCursos();
       }
     });
-
-    }
+    
 </script>
 </body>
 </html>
