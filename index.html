@@ -182,62 +182,23 @@
 
   <div id="modals"></div>
 
-  <script>
-    //Declarando variáveis para ajudar no carregamento lazy de cards  
-      let cursos = [];
-      let cursosFiltrados = [];
-      let offset = 0;
-      const limit = 20;
-      let carregando = false;
+<script>
+    // Variáveis globais para controlar o estado da página
+    let cursos = []; // Armazenará todos os cursos do JSON
+    let cursosFiltrados = []; // Armazenará os cursos que correspondem aos filtros
+    let offset = 0; // Controla a paginação (quantos cursos já foram carregados)
+    const limit = 20; // Quantos cursos carregar por vez
+    let carregando = false; // Flag para evitar carregamentos múltiplos simultâneos
 
-    // Função para renderizar os cards e modais na tela
-    function renderizarCursos(lista, cardsContainer, modalsContainer) {
-      cardsContainer.innerHTML = "";
-      modalsContainer.innerHTML = "";
-      lista.forEach((curso, index) => {
-        cardsContainer.innerHTML += criarCard(curso, index);
-        modalsContainer.innerHTML += criarModal(curso, index);
-      });
-    }
+    // --- FUNÇÕES DE RENDERIZAÇÃO E UI ---
 
-    function renderizarMaisCursos() {
-      if (carregando) return; // previne múltiplas execuções
-      carregando = true;
-    
-      const cardsContainer = document.getElementById('cards');
-      const modalsContainer = document.getElementById('modals');
-      const loader = document.getElementById('loader');
-      loader.style.display = "block";
-    
-      const proxCursos = cursosFiltrados.slice(offset, offset + limit);
-    
-      setTimeout(() => {
-        proxCursos.forEach((curso) => {
-          const idx = offset + i;
-          cardsContainer.innerHTML += criarCard(curso);
-          modalsContainer.innerHTML += criarModal(curso);
-        });
-    
-        offset += proxCursos.length; // Incrementa pelo número de itens realmente adicionados
-        loader.style.display = "none";
-        atualizarContagem();
-        carregando = false; // libera a flag
-      }, 300);
-    }
-    
-    // Função que cria o HTML de um card
+    // Função que cria o HTML de um card de curso
     function criarCard(curso) {
       const instituicao = curso.Instituicao || "UFES";
       const logo = instituicao === "IFES" ? 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Ifes_vertical_logo.svg/1200px-Ifes_vertical_logo.svg.png' : 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Ufes_brasão.png/1200px-Ufes_brasão.png';
-      const temVideo = curso.VideoID && curso.VideoID.trim() !== "";
-      // Ajuste para não incluir o tipo no título, pois já está nos filtros/modal
-      const titulo = `${temVideo ? "🎥 " : ""}${curso.Curso}`;
-      const campus = curso.Campus || "Não informado";
-      const tipoCurso = curso.Tipo || "Não informado";
-      const duracao = curso.Semestres || "?";
 
       return `
-        <article class="card" onclick="abrirModal('modal${curso.id}')">
+        <article class="card" onclick="abrirModal('modal-${curso.id}')">
           <img src="${logo}" alt="Logo ${instituicao}">
           <div class="card-content">
             <h2>${curso.Curso}</h2>
@@ -249,143 +210,168 @@
       `;
     }
 
+    // Função que cria o HTML de um modal de detalhes do curso
+    function criarModal(curso) {
+      return `
+        <div id="modal-${curso.id}" class="modal">
+          <div class="modal-content">
+            <span class="close" onclick="fecharModal('modal-${curso.id}')">&times;</span>
+            <h2>${curso.Curso}</h2>
+            <p><strong>Tipo:</strong> ${curso.Tipo}</p>
+            <p><strong>Instituição:</strong> ${curso.Instituicao || "UFES"}</p>
+            <p><strong>Campus:</strong> ${curso.Campus}</p>
+            <p><strong>Horário:</strong> ${curso.Horário}</p>
+            <p><strong>Acesso:</strong> ${curso["Forma de acesso"]}</p>
+            <a href="${curso["Página do curso"]}" target="_blank">Visitar a página do curso</a>
+            ${curso.VideoID ? `<iframe data-src="https://www.youtube.com/embed/${curso.VideoID}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // Funções para abrir e fechar o modal
+    function abrirModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+
+      const iframe = modal.querySelector('iframe');
+      // Carrega o vídeo apenas quando o modal é aberto pela primeira vez
+      if (iframe && !iframe.src) {
+        iframe.src = iframe.getAttribute('data-src');
+      }
+      modal.style.display = "block";
+    }
+
+    function fecharModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+
+      const iframe = modal.querySelector('iframe');
+      // Para a execução do vídeo ao fechar o modal
+      if (iframe) {
+        iframe.src = ""; // Limpa o src para parar o vídeo
+      }
+      modal.style.display = "none";
+    }
+
+    // Atualiza o texto que informa quantos cursos estão sendo exibidos
     function atualizarContagem() {
       const contador = document.getElementById('contador-cursos');
-      contador.textContent = `Exibindo ${Math.min(offset, cursosFiltrados.length)} de ${cursosFiltrados.length} cursos com os filtros selecionados`;
+      const exibidos = document.getElementById('cards').childElementCount;
+      contador.textContent = `Exibindo ${exibidos} de ${cursosFiltrados.length} cursos com os filtros selecionados`;
     }
 
-    
-    // Função que cria o HTML de um modal
-    function criarModal(curso) {
-        const temVideo = curso.VideoID && curso.VideoID.trim() !== "";
-        // Otimização do link do vídeo
-        const embed = temVideo
-            ? `<iframe id="iframe-${index}" data-src="https://www.youtube.com/embed/${curso.VideoID}" title="Vídeo de apresentação do curso ${curso.Curso}" allowfullscreen></iframe>`
-            : "";
+    // --- FUNÇÕES DE LÓGICA E DADOS ---
 
-        return `
-          <div id="modal${curso.id}" class="modal">
-            <div class="modal-content">
-              <span class="close" onclick="fecharModal('modal${curso.id}')">&times;</span>
-              <h2>${curso.Curso}</h2>
-              <p><strong>Tipo:</strong> ${curso.Tipo}</p>
-              <p><strong>Instituição:</strong> ${curso.Instituicao || "UFES"}</p>
-              <p><strong>Campus:</strong> ${curso.Campus}</p>
-              <p><strong>Horário:</strong> ${curso.Horário}</p>
-              <p><strong>Acesso:</strong> ${curso["Forma de acesso"]}</p>
-              <a href="${curso["Página do curso"]}" target="_blank">Visitar a página do curso</a>
-              ${curso.VideoID ? `<iframe data-src="https://www.youtube.com/embed/${curso.VideoID}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>` : ''}
-            </div>
-          </div>
-        `;
-    }
+    // Carrega mais cursos na tela (paginação)
+    function renderizarMaisCursos() {
+      if (carregando) return;
+      carregando = true;
+      document.getElementById('loader').style.display = "block";
 
-    // Funções para abrir e fechar o modal, com otimização do vídeo
-function abrirModal(modalId) { // Remova o parâmetro 'index'
-  const modal = document.getElementById(modalId);
-  const iframe = modal.querySelector('iframe');
-  if (iframe && !iframe.src) {
-      iframe.src = iframe.getAttribute('data-src');
-  }
-  modal.style.display = "block";
-}
-  modal.removeAttribute("inert");
-  modal.removeAttribute("aria-hidden");
-  modal.style.display = "block";
-}
+      const cardsContainer = document.getElementById('cards');
+      const modalsContainer = document.getElementById('modals');
+      
+      const proxCursos = cursosFiltrados.slice(offset, offset + limit);
 
-function fecharModal(id, index) {
-  const modal = document.getElementById(id);
-  const iframe = document.getElementById(`iframe-${index}`);
-  if (iframe) {
-    iframe.src = "";
-  }
-  modal.setAttribute("inert", "");
-  modal.setAttribute("aria-hidden", "true");
-  modal.style.display = "none";
-}
-
-    // --- PONTO PRINCIPAL DA MUDANÇA ---
-    // Usamos 'fetch' para carregar os dados do arquivo externo
-    fetch('dados_cursos_ufes_atualizado.json')
-      .then(response => response.json())
-      .then(data => { // 'cursos' agora é a lista vinda do arquivo JSON
-         // Adiciona um ID único e permanente a cada curso
-        cursos = data.map((curso, index) => ({ ...curso, id: index }));
-        cursos = data;
-        cursosFiltrados = [...cursos];
-        popularFiltros();   
-        renderizarMaisCursos(); // carrega os primeiros 20
-
-        const cardsContainer = document.getElementById('cards');
-        const modalsContainer = document.getElementById('modals');
-        const campusSelect = document.getElementById('campus');
-
-        // Preenche opções únicas de campus no filtro
-        const campi = [...new Set(cursos.map(c => c.Campus).filter(c => c))].sort();
-        campi.forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c;
-          opt.textContent = c;
-          campusSelect.appendChild(opt);
+      setTimeout(() => {
+        proxCursos.forEach(curso => {
+          cardsContainer.innerHTML += criarCard(curso);
+          modalsContainer.innerHTML += criarModal(curso);
         });
 
-        // Função de filtragem
-        function filtrarCursos() {
-          const texto = document.getElementById('busca').value.toLowerCase();
-          const inst = document.getElementById('instituicao').value;
-          const tipo = document.getElementById('tipo').value;
-          const campus = document.getElementById('campus').value;
-          const duracao = document.getElementById('duracao').value;
+        offset += proxCursos.length; // Incrementa o offset corretamente
+        
+        atualizarContagem();
+        document.getElementById('loader').style.display = "none";
+        carregando = false;
+      }, 300); // Um pequeno delay para simular carregamento
+    }
 
-          cursosFiltrados = cursos.filter(curso => {
-            const instituicaoCurso = curso.Instituicao || "UFES";
-            return (
-              curso.Curso.toLowerCase().includes(texto) &&
-              (inst === "" || instituicaoCurso === inst) &&
-              (tipo === "" || curso.Tipo === tipo) &&
-              (campus === "" || curso.Campus === campus) &&
-              (duracao === "" || curso.Semestres.toString() === duracao)
-            );
+    // Filtra os cursos com base nos inputs do usuário
+    function filtrarCursos() {
+      const texto = document.getElementById('busca').value.toLowerCase();
+      const inst = document.getElementById('instituicao').value;
+      const tipo = document.getElementById('tipo').value;
+      const campus = document.getElementById('campus').value;
+      const duracao = document.getElementById('duracao').value;
+
+      cursosFiltrados = cursos.filter(curso => {
+        const instituicaoCurso = curso.Instituicao || "UFES";
+        return (
+          curso.Curso.toLowerCase().includes(texto) &&
+          (inst === "" || instituicaoCurso === inst) &&
+          (tipo === "" || curso.Tipo === tipo) &&
+          (campus === "" || curso.Campus === campus) &&
+          (duracao === "" || curso.Semestres.toString() === duracao)
+        );
+      });
+
+      // Reseta a visualização para exibir os novos resultados do zero
+      offset = 0;
+      document.getElementById('cards').innerHTML = "";
+      document.getElementById('modals').innerHTML = "";
+      
+      renderizarMaisCursos(); // Renderiza o primeiro lote de cursos filtrados
+    }
+
+    // --- INICIALIZAÇÃO DA PÁGINA ---
+
+    // Ponto de entrada: carrega os dados do JSON e prepara a página
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('dados_cursos_ufes_atualizado.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+          // Adiciona um ID único e permanente a cada curso
+          cursos = data.map((curso, index) => ({ ...curso, id: index }));
+          cursosFiltrados = [...cursos];
+          
+          // Preenche o filtro de campus com opções únicas do JSON
+          const campusSelect = document.getElementById('campus');
+          const campi = [...new Set(cursos.map(c => c.Campus).filter(c => c))].sort();
+          campi.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            campusSelect.appendChild(opt);
           });
 
-          offset = 0;
-          document.getElementById('cards').innerHTML = "";
-          document.getElementById('modals').innerHTML = "";
+          // Adiciona os 'escutadores' de eventos para os filtros
+          document.getElementById('busca').addEventListener('input', filtrarCursos);
+          document.getElementById('instituicao').addEventListener('change', filtrarCursos);
+          document.getElementById('tipo').addEventListener('change', filtrarCursos);
+          document.getElementById('campus').addEventListener('change', filtrarCursos);
+          document.getElementById('duracao').addEventListener('change', filtrarCursos);
+
+          // Carrega o primeiro lote de cursos
           renderizarMaisCursos();
-          //atualizarContagem();//
+        })
+        .catch(error => {
+          console.error('Erro fatal ao carregar dados:', error);
+          document.getElementById('cards').innerHTML = `<p style='color: red;'><strong>Erro:</strong> Não foi possível carregar os dados dos cursos. Verifique se o arquivo 'dados_cursos_ufes_atualizado.json' está na mesma pasta.</p>`;
+        });
+
+      // Evento para fechar modal clicando fora
+      window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+          fecharModal(event.target.id);
         }
-
-        
-        // Adiciona os 'escutadores' de eventos para os filtros
-        document.getElementById('busca').addEventListener('input', filtrarCursos);
-        document.getElementById('instituicao').addEventListener('change', filtrarCursos);
-        document.getElementById('tipo').addEventListener('change', filtrarCursos);
-        document.getElementById('campus').addEventListener('change', filtrarCursos);
-        document.getElementById('duracao').addEventListener('change', filtrarCursos);
-      })
-      .catch(error => {
-        console.error('Erro ao carregar ou processar os dados dos cursos:', error);
-        document.getElementById('cards').innerHTML = "<p style='color: red;'><strong>Erro:</strong> Não foi possível carregar os dados dos cursos. Verifique se o arquivo 'dados_cursos_ufes_atualizado.json' está na mesma pasta do arquivo HTML.</p>";
-      });
-
-    // Fecha o modal se o usuário clicar fora dele
-    window.onclick = function(event) {
-      document.querySelectorAll('.modal').forEach((modal, index) => {
-        if (event.target === modal) {
-          fecharModal(modal.id, index);
+      };
+      
+      // Evento para carregar mais cursos com a rolagem
+      window.addEventListener("scroll", () => {
+        // Condição para carregar mais: não estar carregando, ter mais cursos para mostrar, e estar perto do fim
+        const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
+        if (nearBottom && !carregando && offset < cursosFiltrados.length) {
+          renderizarMaisCursos();
         }
       });
-    };
-    
-    // Chama a geração de cards quando rola té o fim
-    window.addEventListener("scroll", () => {
-      const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
-      if (nearBottom && offset < cursosFiltrados.length) {
-        renderizarMaisCursos();
-      }
     });
-    
 </script>
 </body>
 </html>
