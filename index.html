@@ -43,6 +43,8 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 1.5rem;
+      min-height: 50vh; /* altura mínima para não disparar o scroll quando aplicar um filtro */
+
     }
 
     .card {
@@ -349,7 +351,7 @@ function fecharModal(id, index) {
           document.getElementById('modals').innerHTML = "";
           carregando = false;
           renderizarMaisCursos();
-          atualizarContagem();
+          //atualizarContagem();//
         }
 
         
