@@ -216,8 +216,8 @@
           modalsContainer.innerHTML += criarModal(curso, idx);
         });
     
-        offset += limit;
-        loader.style.display = "none";
+        offset += proxCursos.length;
+        loader.style.display = "none"; // Incrementa pelo número de itens realmente adicionados
         atualizarContagem();
         carregando = false; // libera a flag
       }, 300);
