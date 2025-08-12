@@ -81,7 +81,15 @@
       font-size: 0.95rem;
       margin: 0;
     }
-
+    
+    .card-icon {
+      font-size: 64px; /* Tamanho do ícone */
+      color: #003366; /* Cor do ícone (azul escuro) */
+      text-align: center;
+      padding: 1rem 0;
+      display: block;
+    }
+    
     .modal {
       display: none;
       position: fixed;
@@ -196,14 +204,14 @@
 
     // Função que cria o HTML de um card de curso
     function criarCard(curso) {
-      // Define a instituição e o logo correspondente
-      const instituicao = curso.Instituicao || "UFES";
-      const logo = instituicao === "IFES" ? 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Ifes_vertical_logo.svg/1200px-Ifes_vertical_logo.svg.png' : 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Ufes_brasão.png/1200px-Ufes_brasão.png';
+      // Chama nossa função para obter o nome do ícone correto
+      const nomeIcone = getIconeParaCurso(curso.Curso); 
     
-      // Retorna o HTML do card, usando o ID único no onclick e o logo no src da imagem
       return `
         <article class="card" onclick="abrirModal('modal-${curso.id}')">
-          <img src="${logo}" alt="Logo ${instituicao}">
+          
+          <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
+    
           <div class="card-content">
             <h2>${curso.Curso}</h2>
             <p><strong>Campus:</strong> ${curso.Campus}</p>
