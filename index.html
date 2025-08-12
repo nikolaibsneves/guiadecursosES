@@ -335,10 +335,11 @@
             return response.json();
         })
         .then(data => {
-          // Adiciona um ID único e permanente a cada curso
+          // 1. PRIMEIRO, ordene o array de dados brutos
+          data.sort((a, b) => a.Curso.localeCompare(b.Curso));
+      
+          // 2. DEPOIS, crie o array 'cursos' com os IDs agora sequenciais
           cursos = data.map((curso, index) => ({ ...curso, id: index }));
-          // ---  ORDENAR ---
-          cursos.sort((a, b) => a.Curso.localeCompare(b.Curso));
           
           cursosFiltrados = [...cursos];
           
