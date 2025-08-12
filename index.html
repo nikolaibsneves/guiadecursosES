@@ -286,9 +286,9 @@
           modalsHTML += criarModal(curso);
         });
     
-        // Adiciona o HTML de uma só vez (mais eficiente)
-        document.getElementById('cards').innerHTML += cardsHTML;
-        document.getElementById('modals').innerHTML += modalsHTML;
+        // Adiciona o HTML de uma só vez (mais eficiente), e sem jogar tudo fora (ficava piscando)
+        document.getElementById('cards').insertAdjacentHTML('beforeend', cardsHTML);
+        document.getElementById('modals').insertAdjacentHTML('beforeend', modalsHTML);
     
         offset += proxCursos.length; // Atualiza o offset
     
