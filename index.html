@@ -265,35 +265,52 @@
 
     // --- FUNÇÕES DE LÓGICA E DADOS ---
 
-    // Carrega mais cursos na tela
+    // Substitua a sua função antiga por esta versão mais inteligente
     function renderizarMaisCursos() {
+      // Se já estiver carregando ou se não houver mais cursos, não faz nada
       if (carregando || offset >= cursosFiltrados.length) {
-        // Se já estiver carregando ou se não houver mais cursos, não faz nada
         return;
       }
       carregando = true;
       document.getElementById('loader').style.display = "block";
     
-      const proxCursos = cursosFiltrados.slice(offset, offset + limit);
+      // Um pequeno delay para a percepção de carregamento ser suave
+      setTimeout(() => {
+        const proxCursos = cursosFiltrados.slice(offset, offset + limit);
     
-      // Prepara o HTML para ser adicionado
-      let cardsHTML = '';
-      let modalsHTML = '';
-      proxCursos.forEach(curso => {
-        cardsHTML += criarCard(curso);
-        modalsHTML += criarModal(curso);
-      });
+        // Prepara o HTML para ser adicionado
+        let cardsHTML = '';
+        let modalsHTML = '';
+        proxCursos.forEach(curso => {
+          cardsHTML += criarCard(curso);
+          modalsHTML += criarModal(curso);
+        });
     
-      // Adiciona o HTML de uma só vez (mais eficiente)
-      document.getElementById('cards').innerHTML += cardsHTML;
-      document.getElementById('modals').innerHTML += modalsHTML;
+        // Adiciona o HTML de uma só vez (mais eficiente)
+        document.getElementById('cards').innerHTML += cardsHTML;
+        document.getElementById('modals').innerHTML += modalsHTML;
     
-      offset += proxCursos.length; // Atualiza o offset
+        offset += proxCursos.length; // Atualiza o offset
     
-      // Finaliza o processo
-      atualizarContagem();
-      document.getElementById('loader').style.display = "none";
-      carregando = false;
+        // Finaliza o processo de renderização atual
+        atualizarContagem();
+        document.getElementById('loader').style.display = "none";
+        carregando = false; // Libera a trava de carregamento
+    
+        // --- LÓGICA PROATIVA ADICIONADA AQUI ---
+        // Após terminar, verifica se a tela já foi preenchida.
+        // Usamos um mínimo delay para dar tempo do navegador redesenhar a página.
+        setTimeout(() => {
+          const temBarraDeRolagem = document.documentElement.scrollHeight > window.innerHeight;
+          
+          // Se NÃO tem barra de rolagem E ainda existem cursos a serem mostrados...
+          if (!temBarraDeRolagem && offset < cursosFiltrados.length) {
+            // ...chama a si mesma para carregar o próximo lote.
+            renderizarMaisCursos();
+          }
+        }, 100);
+    
+      }, 300); // Delay principal, para o "Carregando..." aparecer
     }
 
     // Filtra os cursos com base nos inputs do usuário
