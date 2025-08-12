@@ -378,7 +378,7 @@
       // Evento para carregar mais cursos com a rolagem
       window.addEventListener("scroll", () => {
         // Condição para carregar mais: não estar carregando, ter mais cursos para mostrar, e estar perto do fim
-        const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
+        const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200;
         if (nearBottom && !carregando && offset < cursosFiltrados.length) {
           renderizarMaisCursos();
         }
