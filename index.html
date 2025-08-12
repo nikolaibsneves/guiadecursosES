@@ -337,6 +337,9 @@
         .then(data => {
           // Adiciona um ID único e permanente a cada curso
           cursos = data.map((curso, index) => ({ ...curso, id: index }));
+          // ---  ORDENAR ---
+          cursos.sort((a, b) => a.Curso.localeCompare(b.Curso));
+          
           cursosFiltrados = [...cursos];
           
           // Preenche o filtro de campus com opções únicas do JSON
