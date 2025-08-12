@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Guia de Cursos Superiores no ES - Com Filtros</title>
+  <title>Catálogo de Cursos Superiores Gratuitos no ES</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -212,6 +214,40 @@
       `;
     }
 
+    // Função "mágica" que escolhe um ícone com base no nome do curso
+    function getIconeParaCurso(nomeDoCurso) {
+      const nome = nomeDoCurso.toUpperCase(); // Normaliza para maiúsculas para facilitar a busca
+    
+      // Mapeamento de palavras-chave para nomes de ícones do Material Symbols
+      if (nome.includes('ENGENHARIA')) return 'engineering';
+      if (nome.includes('COMPUTAÇÃO') || nome.includes('SISTEMAS')) return 'computer';
+      if (nome.includes('DIREITO')) return 'gavel';
+      if (nome.includes('MEDICINA')) return 'local_hospital';
+      if (nome.includes('ARQUITETURA')) return 'architecture';
+      if (nome.includes('QUÍMICA')) return 'science';
+      if (nome.includes('FÍSICA')) return 'calculate';
+      if (nome.includes('BIOLÓGICAS') || nome.includes('BIOLOGIA')) return 'biotech';
+      if (nome.includes('MATEMÁTICA')) return 'functions';
+      if (nome.includes('LETRAS')) return 'translate';
+      if (nome.includes('PEDAGOGIA') || nome.includes('EDUCAÇÃO')) return 'school';
+      if (nome.includes('HISTÓRIA')) return 'history_edu';
+      if (nome.includes('GEOGRAFIA')) return 'public';
+      if (nome.includes('FILOSOFIA')) return 'psychology';
+      if (nome.includes('ARTES')) return 'palette';
+      if (nome.includes('MÚSICA')) return 'music_note';
+      if (nome.includes('ADMINISTRAÇÃO') || nome.includes('CIÊNCIAS CONTÁBEIS')) return 'account_balance';
+      if (nome.includes('ECONÔMICAS') || nome.includes('ECONOMIA')) return 'trending_up';
+      if (nome.includes('JORNALISMO') || nome.includes('COMUNICAÇÃO')) return 'newspaper';
+      if (nome.includes('FARMÁCIA')) return 'medication';
+      if (nome.includes('NUTRIÇÃO')) return 'nutrition';
+      if (nome.includes('PSICOLOGIA')) return 'neurology';
+      if (nome.includes('AGRONOMIA')) return 'eco';
+      
+      // Se nenhuma palavra-chave for encontrada, retorna um ícone padrão
+      return 'book_4'; 
+    }  
+
+  
     // Função que cria o HTML de um modal de detalhes do curso
     function criarModal(curso) {
       return `
