@@ -194,9 +194,11 @@
 
     // Função que cria o HTML de um card de curso
     function criarCard(curso) {
+      // Define a instituição e o logo correspondente
       const instituicao = curso.Instituicao || "UFES";
       const logo = instituicao === "IFES" ? 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Ifes_vertical_logo.svg/1200px-Ifes_vertical_logo.svg.png' : 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Ufes_brasão.png/1200px-Ufes_brasão.png';
-
+    
+      // Retorna o HTML do card, usando o ID único no onclick e o logo no src da imagem
       return `
         <article class="card" onclick="abrirModal('modal-${curso.id}')">
           <img src="${logo}" alt="Logo ${instituicao}">
@@ -263,29 +265,35 @@
 
     // --- FUNÇÕES DE LÓGICA E DADOS ---
 
-    // Carrega mais cursos na tela (paginação)
+    // Carrega mais cursos na tela
     function renderizarMaisCursos() {
-      if (carregando) return;
+      if (carregando || offset >= cursosFiltrados.length) {
+        // Se já estiver carregando ou se não houver mais cursos, não faz nada
+        return;
+      }
       carregando = true;
       document.getElementById('loader').style.display = "block";
-
-      const cardsContainer = document.getElementById('cards');
-      const modalsContainer = document.getElementById('modals');
-      
+    
       const proxCursos = cursosFiltrados.slice(offset, offset + limit);
-
-      setTimeout(() => {
-        proxCursos.forEach(curso => {
-          cardsContainer.innerHTML += criarCard(curso);
-          modalsContainer.innerHTML += criarModal(curso);
-        });
-
-        offset += proxCursos.length; // Incrementa o offset corretamente
-        
-        atualizarContagem();
-        document.getElementById('loader').style.display = "none";
-        carregando = false;
-      }, 300); // Um pequeno delay para simular carregamento
+    
+      // Prepara o HTML para ser adicionado
+      let cardsHTML = '';
+      let modalsHTML = '';
+      proxCursos.forEach(curso => {
+        cardsHTML += criarCard(curso);
+        modalsHTML += criarModal(curso);
+      });
+    
+      // Adiciona o HTML de uma só vez (mais eficiente)
+      document.getElementById('cards').innerHTML += cardsHTML;
+      document.getElementById('modals').innerHTML += modalsHTML;
+    
+      offset += proxCursos.length; // Atualiza o offset
+    
+      // Finaliza o processo
+      atualizarContagem();
+      document.getElementById('loader').style.display = "none";
+      carregando = false;
     }
 
     // Filtra os cursos com base nos inputs do usuário
