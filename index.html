@@ -150,6 +150,63 @@
         font-size: 0.85rem; /* Fonte menor para os parágrafos */
       }
     }
+
+      /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
+      
+      /* Esconde as ações do card por padrão */
+      .card-actions {
+        display: none;
+        justify-content: space-around;
+        padding: 0.5rem 0;
+        border-top: 1px solid #eee; /* Uma linha para separar */
+        margin-top: 0.5rem;
+      }
+      
+      /* MOSTRA as ações quando o modo está ativo */
+      body.modo-edicao-ativo .card-actions {
+        display: flex;
+      }
+      
+      /* Estilo dos botões de ação (estrela e proibido) */
+      .card-actions button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 32px; /* Tamanho grande para toque */
+        color: #ccc; /* Começam cinza, sem cor */
+        transition: transform 0.2s ease, color 0.2s ease;
+        padding: 0 1rem; /* Adiciona espaço para facilitar o clique */
+      }
+      
+      /* Efeito ao passar o mouse ou tocar */
+      .card-actions button:hover {
+        transform: scale(1.2);
+      }
+      
+      /* Estilo para o botão principal de ligar/desligar o modo */
+      #toggle-edit-mode {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Espaço entre o ícone e o texto */
+        padding: 10px 15px;
+        background-color: #6c757d; /* Um cinza neutro */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem; /* Mesmo tamanho dos outros filtros */
+        margin-left: auto; /* Alinha o botão à direita */
+      }
+      
+      #toggle-edit-mode.active {
+        background-color: #0056b3; /* Azul para indicar que está ativo */
+      }
+      
+      /* Ajuste para o cursor no card */
+      .card-clickable-area {
+          cursor: pointer;
+      }
+    
   </style>
 </head>
 <body>
@@ -179,6 +236,10 @@
         <option value="9">9 semestres</option>
         <option value="10">10 semestres</option>
       </select>
+        <button id="toggle-edit-mode">
+      <span class="material-symbols-outlined">tune</span>
+      Elimine e Favorite
+      </button>
     </section>
 
     <p id="contador-cursos" style="font-weight:bold; margin-bottom:1rem;">Exibindo 0 cursos com os filtros selecionados</p>
@@ -204,19 +265,23 @@
 
     // Função que cria o HTML de um card de curso
     function criarCard(curso) {
-      // Chama nossa função para obter o nome do ícone correto
-      const nomeIcone = getIconeParaCurso(curso.Curso); 
+      const nomeIcone = getIconeParaCurso(curso.Curso);
     
       return `
-        <article class="card" onclick="abrirModal('modal-${curso.id}')">
+        <article class="card">
+          <div class="card-clickable-area" onclick="abrirModal('modal-${curso.id}')">
+            <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
+            <div class="card-content">
+              <h2>${curso.Curso}</h2>
+              <p><strong>Campus:</strong> ${curso.Campus}</p>
+              <p><strong>Tipo:</strong> ${curso.Tipo}</p>
+              <p><strong>Duração:</strong> ${curso.Semestres} semestres</p>
+            </div>
+          </div>
           
-          <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
-    
-          <div class="card-content">
-            <h2>${curso.Curso}</h2>
-            <p><strong>Campus:</strong> ${curso.Campus}</p>
-            <p><strong>Tipo:</strong> ${curso.Tipo}</p>
-            <p><strong>Duração:</strong> ${curso.Semestres} semestres</p>
+          <div class="card-actions">
+            <button title="Eliminar curso">🚫</button>
+            <button title="Favoritar curso">⭐</button>
           </div>
         </article>
       `;
@@ -385,7 +450,6 @@
     }
 
     // --- INICIALIZAÇÃO DA PÁGINA ---
-
     // Ponto de entrada: carrega os dados do JSON e prepara a página
     document.addEventListener('DOMContentLoaded', () => {
       fetch('dados_cursos_ufes_atualizado.json')
@@ -418,14 +482,21 @@
             opt.textContent = c;
             campusSelect.appendChild(opt);
           });
-
-          // Adiciona os 'escutadores' de eventos para os filtros
+    
+          // --- ADICIONA TODOS OS 'ESCUTADORES' DE EVENTOS DOS CONTROLES AQUI ---
           document.getElementById('busca').addEventListener('input', filtrarCursos);
           document.getElementById('instituicao').addEventListener('change', filtrarCursos);
           document.getElementById('tipo').addEventListener('change', filtrarCursos);
           document.getElementById('campus').addEventListener('change', filtrarCursos);
           document.getElementById('duracao').addEventListener('change', filtrarCursos);
-
+    
+          // --- CÓDIGO PARA O BOTÃO LIGA/DESLIGA NO LUGAR CORRETO ---
+          const toggleButton = document.getElementById('toggle-edit-mode');
+          toggleButton.addEventListener('click', () => {
+            document.body.classList.toggle('modo-edicao-ativo');
+            toggleButton.classList.toggle('active');
+          });
+    
           // Carrega o primeiro lote de cursos
           renderizarMaisCursos();
         })
@@ -433,7 +504,7 @@
           console.error('Erro fatal ao carregar dados:', error);
           document.getElementById('cards').innerHTML = `<p style='color: red;'><strong>Erro:</strong> Não foi possível carregar os dados dos cursos. Verifique se o arquivo 'dados_cursos_ufes_atualizado.json' está na mesma pasta.</p>`;
         });
-
+    
       // Evento para fechar modal clicando fora
       window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
