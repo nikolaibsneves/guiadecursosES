@@ -396,12 +396,17 @@
             return response.json();
         })
         .then(data => {
-          // 1. PRIMEIRO, ordene o array de dados brutos
+          // 1. Primeiro, ordenamos os dados como antes
           data.sort((a, b) => a.Curso.localeCompare(b.Curso));
-      
-          // 2. DEPOIS, crie o array 'cursos' com os IDs agora sequenciais
-          cursos = data.map((curso, index) => ({ ...curso, id: index }));
-          
+        
+          // 2. Agora, ao mapear, adicionamos TUDO que precisamos: id, isFavorito e isEliminado
+          cursos = data.map((curso, index) => ({
+            ...curso,             // Mantém todos os dados originais do JSON
+            id: index,            // Adiciona o ID sequencial e ordenado
+            isFavorito: false,    // Adiciona a chave para controlar os favoritos
+            isEliminado: false    // Adiciona a chave para controlar os eliminados
+          }));
+        
           cursosFiltrados = [...cursos];
           
           // Preenche o filtro de campus com opções únicas do JSON
