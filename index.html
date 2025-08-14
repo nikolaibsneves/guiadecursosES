@@ -207,8 +207,10 @@
           cursor: pointer;
       }
 
-      .card-actions button.favorito-ativo {
-        color: #ffc107; /* Cor de ouro/amarelo para a estrela */
+      /* Colorir o ícone preenchido. */
+      .card-actions button.favorito-ativo .material-symbols-outlined {
+        color: #ffc107; /* Amarelo ouro */
+        font-variation-settings: 'FILL' 1; /* Transforma o contorno em preenchido */
       }
   </style>
 </head>
@@ -263,70 +265,85 @@
     let offset = 0; // Controla a paginação (quantos cursos já foram carregados)
     const limit = 20; // Quantos cursos carregar por vez
     let carregando = false; // Flag para evitar carregamentos múltiplos simultâneos
-
+    let modoEdicaoAtivo = false;
+  
   // --- FUNÇÕES PARA FAVORITAR E ELIMINAR ---
 
     function toggleFavorito(cursoId) {
-      // Encontra o curso no nosso array de dados principal pelo ID
       const curso = cursos.find(c => c.id === cursoId);
-      if (!curso) return; // Segurança: se não encontrar, não faz nada
+      if (!curso) return;
     
-      // Inverte o estado: se era false, vira true; se era true, vira false
+      // 1. Muda o estado nos dados
       curso.isFavorito = !curso.isFavorito;
     
-      // Força uma nova renderização da tela para refletir a mudança visual
-      filtrarCursos();
+      // 2. Manipula o card específico na tela, SEM RECARREGAR
+      const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:nth-child(1)`);
+      const starIcon = cardButton.querySelector('.material-symbols-outlined');
+    
+      if (curso.isFavorito) {
+        cardButton.classList.add('favorito-ativo');
+        starIcon.textContent = 'star'; // Ícone preenchido
+      } else {
+        cardButton.classList.remove('favorito-ativo');
+        starIcon.textContent = 'star_border'; // Ícone de contorno
+      }
     }
     
     function toggleEliminado(cursoId) {
       const curso = cursos.find(c => c.id === cursoId);
       if (!curso) return;
     
-      // Inverte o estado de eliminação
+      // 1. Muda o estado nos dados
       curso.isEliminado = !curso.isEliminado;
       
-      // Força uma nova renderização, que fará o card sumir ou reaparecer
-      filtrarCursos();
+      // 2. Apenas esconde ou mostra o card na tela, SEM RECARREGAR
+      const cardElement = document.getElementById(`card-${cursoId}`);
+      if (curso.isEliminado) {
+        cardElement.style.display = 'none';
+      } else {
+        // Esta parte será útil para a "lixeira" depois
+        cardElement.style.display = 'block'; 
+      }
     }
   
   // --- FUNÇÕES DE RENDERIZAÇÃO E UI ---
 
     // Função que cria o HTML de um card de curso
-   function criarCard(curso) {
-    const nomeIcone = getIconeParaCurso(curso.Curso);
+    function criarCard(curso) {
+      const nomeIcone = getIconeParaCurso(curso.Curso);
+      const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
     
-    // Define uma classe CSS extra se o curso for favorito
-    const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
-  
-    return `
-      <article class="card">
-        <div class="card-clickable-area" onclick="abrirModal('modal-${curso.id}')">
-          <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
-          <div class="card-content">
-            <h2>${curso.Curso}</h2>
-            <p><strong>Campus:</strong> ${curso.Campus}</p>
-            <p><strong>Tipo:</strong> ${curso.Tipo}</p>
-            <p><strong>Duração:</strong> ${curso.Semestres} semestres</p>
+      // Define qual ícone de estrela usar: preenchido ou contorno
+      const iconeEstrela = curso.isFavorito ? 'star' : 'star_border';
+    
+      return `
+        <article class="card" id="card-${curso.id}">
+          <div class="card-clickable-area" onclick="abrirModal('modal-${curso.id}')">
+            <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
+            <div class="card-content">
+              <h2>${curso.Curso}</h2>
+              <p><strong>Campus:</strong> ${curso.Campus}</p>
+              <p><strong>Tipo:</strong> ${curso.Tipo}</p>
+              <p><strong>Duração:</strong> ${curso.Semestres} semestres</p>
+            </div>
           </div>
-        </div>
-        
-        <div class="card-actions">
-          <button 
-            title="Favoritar curso" 
-            class="${classeFavorito}" 
-            onclick="toggleFavorito(${curso.id})">
-            ⭐
-          </button>
-  
-          <button 
-            title="Eliminar curso" 
-            onclick="toggleEliminado(${curso.id})">
-            🚫
-          </button>
-        </div>
-      </article>
-    `;
-  }
+          
+          <div class="card-actions">
+            <button 
+              title="Favoritar curso" 
+              class="${classeFavorito}" 
+              onclick="toggleFavorito(${curso.id})">
+              <span class="material-symbols-outlined">${iconeEstrela}</span>
+            </button>
+            <button 
+              title="Eliminar curso" 
+              onclick="toggleEliminado(${curso.id})">
+              🚫
+            </button>
+          </div>
+        </article>
+      `;
+    }
 
     // Função "mágica" que escolhe um ícone com base no nome do curso
     function getIconeParaCurso(nomeDoCurso) {
@@ -473,9 +490,10 @@
 
       cursosFiltrados = cursos.filter(curso => {
         // --- CONDIÇÃO ADICIONADA AQUI ---
-        // A primeira regra de todas: NUNCA mostre um curso que foi eliminado.
-        if (curso.isEliminado) {
-          return false;
+        // Só esconde o curso se o modo de edição estiver ATIVO E o curso estiver eliminado.
+       if (modoEdicaoAtivo && curso.isEliminado) {
+            return false;
+          }
         }
     
         // O resto da lógica de filtro continua igual
@@ -541,8 +559,14 @@
           // --- CÓDIGO PARA O BOTÃO LIGA/DESLIGA NO LUGAR CORRETO ---
           const toggleButton = document.getElementById('toggle-edit-mode');
           toggleButton.addEventListener('click', () => {
+            // Atualiza a variável de estado
+            modoEdicaoAtivo = !modoEdicaoAtivo;
+            
             document.body.classList.toggle('modo-edicao-ativo');
             toggleButton.classList.toggle('active');
+          
+            // Força o filtro a ser reaplicado com a nova regra de visibilidade
+            filtrarCursos();
           });
     
           // Carrega o primeiro lote de cursos
