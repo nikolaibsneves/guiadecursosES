@@ -487,16 +487,15 @@
       const tipo = document.getElementById('tipo').value;
       const campus = document.getElementById('campus').value;
       const duracao = document.getElementById('duracao').value;
-
+    
       cursosFiltrados = cursos.filter(curso => {
-        // --- CONDIÇÃO ADICIONADA AQUI ---
-        // Só esconde o curso se o modo de edição estiver ATIVO E o curso estiver eliminado.
-       if (modoEdicaoAtivo && curso.isEliminado) {
-            return false;
-          }
+        // A primeira regra: se o modo de edição estiver ATIVO e o curso estiver ELIMINADO,
+        // ele é imediatamente reprovado no filtro.
+        if (modoEdicaoAtivo && curso.isEliminado) {
+          return false;
         }
     
-        // O resto da lógica de filtro continua igual
+        // Se ele passou pela primeira regra, então verificamos todas as outras condições.
         const instituicaoCurso = curso.Instituicao || "UFES";
         return (
           curso.Curso.toLowerCase().includes(texto) &&
@@ -513,7 +512,7 @@
       document.getElementById('modals').innerHTML = "";
       
       renderizarMaisCursos(); // Renderiza o primeiro lote de cursos filtrados
-  }
+    }
 
     // --- INICIALIZAÇÃO DA PÁGINA ---
     // Ponto de entrada: carrega os dados do JSON e prepara a página
