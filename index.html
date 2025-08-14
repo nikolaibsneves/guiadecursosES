@@ -55,7 +55,8 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       overflow: hidden;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      transition: transform 0.2s ease, opacity 0.3s ease; /* Adicione a transição de opacidade */
+      opacity: 1; /* Garante que ele começa visível */
     }
 
     .card:hover {
@@ -212,6 +213,74 @@
         color: #ffc107; /* Amarelo ouro */
         font-variation-settings: 'FILL' 1; /* Transforma o contorno em preenchido */
       }
+    
+      .card.eliminado {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+    
+      /* Estilos para os botões de ação do menu */
+      .edit-actions-container {
+        display: none; /* Escondido por padrão */
+        gap: 10px;
+        margin-left: auto; /* Empurra para a direita */
+      }
+      
+      /* Mostra o container quando o modo de edição está ativo */
+      body.modo-edicao-ativo .edit-actions-container {
+        display: flex;
+      }
+      
+      .edit-actions-container button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        background-color: #f0f0f0;
+      }
+      
+      .edit-actions-container button.danger {
+        background-color: #dc3545; /* Vermelho perigo */
+        color: white;
+      }
+
+      .container-lista {
+        max-height: 60vh;
+        overflow-y: auto;
+        margin-top: 1rem;
+      }
+      .card-lista {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        border-bottom: 1px solid #eee;
+      }
+      .card-content-lista {
+        flex-grow: 1;
+      }
+      .card-content-lista h2 {
+        font-size: 1rem;
+        margin: 0;
+      }
+      .card-content-lista p {
+        font-size: 0.9rem;
+        margin: 0;
+      }
+      .card-icon-lista {
+        margin-right: 1rem;
+        color: #003366;
+      }
+      .card-actions-lista button {
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 1.5rem;
+      }
+    
   </style>
 </head>
 <body>
@@ -245,6 +314,16 @@
       <span class="material-symbols-outlined">tune</span>
       Elimine e Favorite
       </button>
+      <button id="toggle-edit-mode">
+        <span class="material-symbols-outlined">tune</span>
+        Elimine e Favorite
+      </button>
+    
+      <div id="edit-actions" class="edit-actions-container">
+        <button id="show-favorites">⭐ Favoritos</button>
+        <button id="show-eliminated">🗑️ Lixeira</button>
+        <button id="clear-lists" class="danger">Limpar Tudo</button>
+      </div>
     </section>
 
     <p id="contador-cursos" style="font-weight:bold; margin-bottom:1rem;">Exibindo 0 cursos com os filtros selecionados</p>
@@ -293,16 +372,20 @@
       const curso = cursos.find(c => c.id === cursoId);
       if (!curso) return;
     
-      // 1. Muda o estado nos dados
       curso.isEliminado = !curso.isEliminado;
       
-      // 2. Apenas esconde ou mostra o card na tela, SEM RECARREGAR
       const cardElement = document.getElementById(`card-${cursoId}`);
-      if (curso.isEliminado) {
-        cardElement.style.display = 'none';
+      
+      // Adiciona a classe que fará a mágica do fade-out
+      cardElement.classList.toggle('eliminado', curso.isEliminado);
+    
+      // Apenas esconde o card se o modo de edição estiver ativo
+      if (modoEdicaoAtivo && curso.isEliminado) {
+          setTimeout(() => {
+              cardElement.style.display = 'none';
+          }, 300); // Espera a animação terminar antes de esconder de fato
       } else {
-        // Esta parte será útil para a "lixeira" depois
-        cardElement.style.display = 'block'; 
+          cardElement.style.display = 'block';
       }
     }
   
@@ -480,31 +563,65 @@
       }, 300); // Delay principal, para o "Carregando..." aparecer
     }
 
+    function abrirModalDeLista(titulo, listaDeCursos, isLixeira = false) {
+      // Cria o HTML do modal dinamicamente
+      let cardsHTML = '';
+      if (listaDeCursos.length === 0) {
+        cardsHTML = '<p>Nenhum curso aqui.</p>';
+      } else {
+        listaDeCursos.forEach(curso => {
+          const nomeIcone = getIconeParaCurso(curso.Curso);
+          // Se for a lixeira, o botão de ação será para restaurar
+          const actionButton = isLixeira
+            ? `<button title="Restaurar curso" onclick="toggleEliminado(${curso.id})">♻️ Restaurar</button>`
+            : `<button title="Remover dos favoritos" onclick="toggleFavorito(${curso.id})">⭐</button>`;
+          
+          cardsHTML += `
+            <article class="card-lista">
+              <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
+              <div class="card-content-lista">
+                <h2>${curso.Curso}</h2>
+                <p>${curso.Campus}</p>
+              </div>
+              <div class="card-actions-lista">${actionButton}</div>
+            </article>
+          `;
+        });
+      }
+    
+      const modalHTML = `
+        <div id="lista-modal" class="modal" style="display:block;">
+          <div class="modal-content">
+            <span class="close" onclick="fecharModal('lista-modal')">&times;</span>
+            <h2>${titulo}</h2>
+            <div class="container-lista">${cardsHTML}</div>
+          </div>
+        </div>
+      `;
+    
+      // Adiciona o novo modal ao corpo do documento
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+  
     // Filtra os cursos com base nos inputs do usuário
     function filtrarCursos() {
-      const texto = document.getElementById('busca').value.toLowerCase();
-      const inst = document.getElementById('instituicao').value;
-      const tipo = document.getElementById('tipo').value;
-      const campus = document.getElementById('campus').value;
-      const duracao = document.getElementById('duracao').value;
-    
-      cursosFiltrados = cursos.filter(curso => {
-        // A primeira regra: se o modo de edição estiver ATIVO e o curso estiver ELIMINADO,
-        // ele é imediatamente reprovado no filtro.
-        if (modoEdicaoAtivo && curso.isEliminado) {
-          return false;
-        }
-    
-        // Se ele passou pela primeira regra, então verificamos todas as outras condições.
-        const instituicaoCurso = curso.Instituicao || "UFES";
-        return (
-          curso.Curso.toLowerCase().includes(texto) &&
-          (inst === "" || instituicaoCurso === inst) &&
-          (tipo === "" || curso.Tipo === tipo) &&
-          (campus === "" || curso.Campus === campus) &&
-          (duracao === "" || curso.Semestres.toString() === duracao)
-        );
-      });
+       cursosFiltrados = cursos.filter(curso => {
+      // A primeira regra: se o modo de edição estiver ATIVO e o curso estiver ELIMINADO,
+      // ele é imediatamente reprovado no filtro.
+      if (modoEdicaoAtivo && curso.isEliminado) {
+        return false;
+      }
+  
+      // Se ele passou pela primeira regra, então verificamos todas as outras condições.
+      const instituicaoCurso = curso.Instituicao || "UFES";
+      return (
+        curso.Curso.toLowerCase().includes(texto) &&
+        (inst === "" || instituicaoCurso === inst) &&
+        (tipo === "" || curso.Tipo === tipo) &&
+        (campus === "" || curso.Campus === campus) &&
+        (duracao === "" || curso.Semestres.toString() === duracao)
+      );
+    });
     
       // Reseta a visualização para exibir os novos resultados do zero
       offset = 0;
@@ -554,7 +671,30 @@
           document.getElementById('tipo').addEventListener('change', filtrarCursos);
           document.getElementById('campus').addEventListener('change', filtrarCursos);
           document.getElementById('duracao').addEventListener('change', filtrarCursos);
-    
+          // Botão para mostrar os favoritos
+          document.getElementById('show-favorites').addEventListener('click', () => {
+            const favoritos = cursos.filter(c => c.isFavorito);
+            abrirModalDeLista('Meus Favoritos', favoritos);
+          });
+          
+          // Botão para mostrar a lixeira
+          document.getElementById('show-eliminated').addEventListener('click', () => {
+            const eliminados = cursos.filter(c => c.isEliminado);
+            abrirModalDeLista('Cursos na Lixeira', eliminados, true); // true indica que é a lixeira
+          });
+          
+          // Botão para limpar tudo
+          document.getElementById('clear-lists').addEventListener('click', () => {
+            // Pede confirmação antes de apagar
+            if (confirm('Tem certeza que deseja limpar suas listas de favoritos e eliminados? Esta ação não pode ser desfeita.')) {
+              cursos.forEach(c => {
+                c.isFavorito = false;
+                c.isEliminado = false;
+              });
+              // Força a atualização da tela
+              filtrarCursos();
+            }
+          });
           // --- CÓDIGO PARA O BOTÃO LIGA/DESLIGA NO LUGAR CORRETO ---
           const toggleButton = document.getElementById('toggle-edit-mode');
           toggleButton.addEventListener('click', () => {
