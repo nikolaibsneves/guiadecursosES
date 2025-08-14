@@ -310,10 +310,7 @@
         <option value="9">9 semestres</option>
         <option value="10">10 semestres</option>
       </select>
-        <button id="toggle-edit-mode">
-      <span class="material-symbols-outlined">tune</span>
-      Elimine e Favorite
-      </button>
+
       <button id="toggle-edit-mode">
         <span class="material-symbols-outlined">tune</span>
         Elimine e Favorite
@@ -497,13 +494,18 @@
     function fecharModal(modalId) {
       const modal = document.getElementById(modalId);
       if (!modal) return;
-
-      const iframe = modal.querySelector('iframe');
-      // Para a execução do vídeo ao fechar o modal
-      if (iframe) {
-        iframe.src = ""; // Limpa o src para parar o vídeo
+    
+      // Se for o modal da lista, ele deve ser completamente removido, não apenas escondido
+      if (modalId === 'lista-modal') {
+        modal.remove(); 
+      } else {
+        // Para os modais de detalhes de curso, a lógica antiga se mantém
+        const iframe = modal.querySelector('iframe');
+        if (iframe) {
+          iframe.src = "";
+        }
+        modal.style.display = "none";
       }
-      modal.style.display = "none";
     }
 
     // Atualiza o texto que informa quantos cursos estão sendo exibidos
@@ -564,26 +566,30 @@
     }
 
     function abrirModalDeLista(titulo, listaDeCursos, isLixeira = false) {
-      // Cria o HTML do modal dinamicamente
+      // Garante que não haja um modal de lista antigo aberto
+      const modalAntigo = document.getElementById('lista-modal');
+      if (modalAntigo) modalAntigo.remove();
+    
       let cardsHTML = '';
       if (listaDeCursos.length === 0) {
-        cardsHTML = '<p>Nenhum curso aqui.</p>';
+        cardsHTML = '<p>Nenhum curso aqui. A lista está vazia.</p>';
       } else {
         listaDeCursos.forEach(curso => {
           const nomeIcone = getIconeParaCurso(curso.Curso);
-          // Se for a lixeira, o botão de ação será para restaurar
-          const actionButton = isLixeira
-            ? `<button title="Restaurar curso" onclick="toggleEliminado(${curso.id})">♻️ Restaurar</button>`
-            : `<button title="Remover dos favoritos" onclick="toggleFavorito(${curso.id})">⭐</button>`;
+          // A ação do botão agora também remove o card da lista do modal
+          const acaoBotao = isLixeira
+            ? `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️ Restaurar</button>`
+            : `<button title="Remover dos favoritos" onclick="removerFavoritoDaLista(${curso.id})">⭐</button>`;
           
+          // Adicionamos um ID único para cada 'card-lista'
           cardsHTML += `
-            <article class="card-lista">
+            <article class="card-lista" id="lista-card-${curso.id}">
               <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
               <div class="card-content-lista">
                 <h2>${curso.Curso}</h2>
                 <p>${curso.Campus}</p>
               </div>
-              <div class="card-actions-lista">${actionButton}</div>
+              <div class="card-actions-lista">${acaoBotao}</div>
             </article>
           `;
         });
@@ -685,26 +691,25 @@
           
           // Botão para limpar tudo
           document.getElementById('clear-lists').addEventListener('click', () => {
-            // Pede confirmação antes de apagar
             if (confirm('Tem certeza que deseja limpar suas listas de favoritos e eliminados? Esta ação não pode ser desfeita.')) {
               cursos.forEach(c => {
                 c.isFavorito = false;
                 c.isEliminado = false;
               });
-              // Força a atualização da tela
-              filtrarCursos();
+              // Força a atualização da tela para refletir a limpeza
+              filtrarCursos(); 
             }
           });
+          
           // --- CÓDIGO PARA O BOTÃO LIGA/DESLIGA NO LUGAR CORRETO ---
           const toggleButton = document.getElementById('toggle-edit-mode');
-          toggleButton.addEventListener('click', () => {
-            // Atualiza a variável de estado
+           document.getElementById('toggle-edit-mode').addEventListener('click', () => {
             modoEdicaoAtivo = !modoEdicaoAtivo;
-            
             document.body.classList.toggle('modo-edicao-ativo');
-            toggleButton.classList.toggle('active');
+            document.getElementById('toggle-edit-mode').classList.toggle('active');
           
-            // Força o filtro a ser reaplicado com a nova regra de visibilidade
+            // Força a reaplicação dos filtros. Quando o modoEdicaoAtivo for false,
+            // a condição de esconder os eliminados não será atendida, e eles voltarão a aparecer.
             filtrarCursos();
           });
     
@@ -732,6 +737,28 @@
         }
       });
     });
+
+    //Funcções para remover os itens do modal em tempo real.
+    function removerFavoritoDaLista(cursoId) {
+      // 1. Executa a lógica principal de desfavoritar
+      toggleFavorito(cursoId);
+      // 2. Encontra e remove o item do modal da lista
+      const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
+      if (cardNaLista) {
+        cardNaLista.remove();
+      }
+    }
+    
+    function restaurarCursoDaLixeira(cursoId) {
+      // 1. Executa a lógica principal de restaurar (que é a mesma de eliminar)
+      toggleEliminado(cursoId);
+      // 2. Encontra e remove o item do modal da lixeira
+      const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
+      if (cardNaLista) {
+        cardNaLista.remove();
+      }
+    }
+  
 </script>
 </body>
 </html>
