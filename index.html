@@ -206,7 +206,10 @@
       .card-clickable-area {
           cursor: pointer;
       }
-    
+
+      .card-actions button.favorito-ativo {
+        color: #ffc107; /* Cor de ouro/amarelo para a estrela */
+      }
   </style>
 </head>
 <body>
@@ -261,31 +264,69 @@
     const limit = 20; // Quantos cursos carregar por vez
     let carregando = false; // Flag para evitar carregamentos múltiplos simultâneos
 
-    // --- FUNÇÕES DE RENDERIZAÇÃO E UI ---
+  // --- FUNÇÕES PARA FAVORITAR E ELIMINAR ---
+
+    function toggleFavorito(cursoId) {
+      // Encontra o curso no nosso array de dados principal pelo ID
+      const curso = cursos.find(c => c.id === cursoId);
+      if (!curso) return; // Segurança: se não encontrar, não faz nada
+    
+      // Inverte o estado: se era false, vira true; se era true, vira false
+      curso.isFavorito = !curso.isFavorito;
+    
+      // Força uma nova renderização da tela para refletir a mudança visual
+      filtrarCursos();
+    }
+    
+    function toggleEliminado(cursoId) {
+      const curso = cursos.find(c => c.id === cursoId);
+      if (!curso) return;
+    
+      // Inverte o estado de eliminação
+      curso.isEliminado = !curso.isEliminado;
+      
+      // Força uma nova renderização, que fará o card sumir ou reaparecer
+      filtrarCursos();
+    }
+  
+  // --- FUNÇÕES DE RENDERIZAÇÃO E UI ---
 
     // Função que cria o HTML de um card de curso
-    function criarCard(curso) {
-      const nomeIcone = getIconeParaCurso(curso.Curso);
+   function criarCard(curso) {
+    const nomeIcone = getIconeParaCurso(curso.Curso);
     
-      return `
-        <article class="card">
-          <div class="card-clickable-area" onclick="abrirModal('modal-${curso.id}')">
-            <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
-            <div class="card-content">
-              <h2>${curso.Curso}</h2>
-              <p><strong>Campus:</strong> ${curso.Campus}</p>
-              <p><strong>Tipo:</strong> ${curso.Tipo}</p>
-              <p><strong>Duração:</strong> ${curso.Semestres} semestres</p>
-            </div>
+    // Define uma classe CSS extra se o curso for favorito
+    const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
+  
+    return `
+      <article class="card">
+        <div class="card-clickable-area" onclick="abrirModal('modal-${curso.id}')">
+          <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
+          <div class="card-content">
+            <h2>${curso.Curso}</h2>
+            <p><strong>Campus:</strong> ${curso.Campus}</p>
+            <p><strong>Tipo:</strong> ${curso.Tipo}</p>
+            <p><strong>Duração:</strong> ${curso.Semestres} semestres</p>
           </div>
-          
-          <div class="card-actions">
-            <button title="Eliminar curso">🚫</button>
-            <button title="Favoritar curso">⭐</button>
-          </div>
-        </article>
-      `;
-    }
+        </div>
+        
+        <div class="card-actions">
+          <button 
+            title="Favoritar curso" 
+            class="${classeFavorito}" 
+            onclick="toggleFavorito(${curso.id})">
+            ⭐
+          </button>
+  
+          <button 
+            title="Eliminar curso" 
+            onclick="toggleEliminado(${curso.id})">
+            🚫
+          </button>
+        </div>
+      </article>
+    `;
+  }
 
     // Função "mágica" que escolhe um ícone com base no nome do curso
     function getIconeParaCurso(nomeDoCurso) {
@@ -431,6 +472,13 @@
       const duracao = document.getElementById('duracao').value;
 
       cursosFiltrados = cursos.filter(curso => {
+        // --- CONDIÇÃO ADICIONADA AQUI ---
+        // A primeira regra de todas: NUNCA mostre um curso que foi eliminado.
+        if (curso.isEliminado) {
+          return false;
+        }
+    
+        // O resto da lógica de filtro continua igual
         const instituicaoCurso = curso.Instituicao || "UFES";
         return (
           curso.Curso.toLowerCase().includes(texto) &&
@@ -440,14 +488,14 @@
           (duracao === "" || curso.Semestres.toString() === duracao)
         );
       });
-
+    
       // Reseta a visualização para exibir os novos resultados do zero
       offset = 0;
       document.getElementById('cards').innerHTML = "";
       document.getElementById('modals').innerHTML = "";
       
       renderizarMaisCursos(); // Renderiza o primeiro lote de cursos filtrados
-    }
+  }
 
     // --- INICIALIZAÇÃO DA PÁGINA ---
     // Ponto de entrada: carrega os dados do JSON e prepara a página
