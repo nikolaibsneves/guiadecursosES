@@ -531,33 +531,33 @@
     }
 
     function abrirModalDeLista(titulo, listaDeCursos, isLixeira = false) {
-        const modalAntigo = document.getElementById('lista-modal');
-        if (modalAntigo) modalAntigo.remove();
-    
-        let cardsHTML = '';
-        if (listaDeCursos.length === 0) {
-            cardsHTML = '<p>Nenhum curso aqui. A lista está vazia.</p>';
-        } else {
-            listaDeCursos.forEach(curso => {
-                const nomeIcone = getIconeParaCurso(curso.Curso);
-                const acaoBotao = isLixeira ?
-                    `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️ Restaurar</button>` :
-                    `<button title="Remover dos favoritos" onclick="removerFavoritoDaLista(${curso.id})">⭐</button>`;
-                cardsHTML += `
-            <article class="card-lista" id="lista-card-${curso.id}">
-              <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
-              <div class="card-content-lista"><h2>${curso.Curso}</h2><p>${curso.Campus}</p></div>
-              <div class="card-actions-lista">${acaoBotao}</div>
-            </article>`;
-            });
-        }
-        const modalHTML = `
-        <div id="lista-modal" class="modal" style="display:block;">
-          <div class="modal-content"><span class="close" onclick="fecharModal('lista-modal')">&times;</span>
-            <h2>${titulo}</h2><div class="container-lista">${cardsHTML}</div>
-          </div>
-        </div>`;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+      const modalAntigo = document.getElementById('lista-modal');
+      if (modalAntigo) modalAntigo.remove();
+  
+      let cardsHTML = '';
+      if (listaDeCursos.length === 0) {
+          cardsHTML = '<p>Nenhum curso aqui. A lista está vazia.</p>';
+      } else {
+          listaDeCursos.forEach(curso => {
+              const nomeIcone = getIconeParaCurso(curso.Curso);
+              const acaoBotao = isLixeira ?
+                  `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️ Restaurar</button>` :
+                  `<button title="Remover dos favoritos" onclick="removerFavoritoDaLista(${curso.id})">⭐</button>`;
+              cardsHTML += `
+          <article class="card-lista" id="lista-card-${curso.id}">
+            <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
+            <div class="card-content-lista"><h2>${curso.Curso}</h2><p>${curso.Campus}</p></div>
+            <div class="card-actions-lista">${acaoBotao}</div>
+          </article>`;
+          });
+      }
+      const modalHTML = `
+      <div id="lista-modal" class="modal" style="display:block;">
+        <div class="modal-content"><span class="close" onclick="fecharModal('lista-modal')">&times;</span>
+          <h2>${titulo}</h2><div class="container-lista">${cardsHTML}</div>
+        </div>
+      </div>`;
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
     
       const modalHTML = `
@@ -576,30 +576,35 @@
   
     // Filtra os cursos com base nos inputs do usuário
     function filtrarCursos() {
-       cursosFiltrados = cursos.filter(curso => {
-      // A primeira regra: se o modo de edição estiver ATIVO e o curso estiver ELIMINADO,
-      // ele é imediatamente reprovado no filtro.
-      if (modoEdicaoAtivo && curso.isEliminado) {
-        return false;
-      }
-  
-      // Se ele passou pela primeira regra, então verificamos todas as outras condições.
-      const instituicaoCurso = curso.Instituicao || "UFES";
-      return (
-        curso.Curso.toLowerCase().includes(texto) &&
-        (inst === "" || instituicaoCurso === inst) &&
-        (tipo === "" || curso.Tipo === tipo) &&
-        (campus === "" || curso.Campus === campus) &&
-        (duracao === "" || curso.Semestres.toString() === duracao)
-      );
-    });
+        // Pega os valores dos filtros NO MOMENTO em que a função é chamada
+        const texto = document.getElementById('busca').value.toLowerCase();
+        const inst = document.getElementById('instituicao').value;
+        const tipo = document.getElementById('tipo').value;
+        const campus = document.getElementById('campus').value;
+        const duracao = document.getElementById('duracao').value;
     
-      // Reseta a visualização para exibir os novos resultados do zero
-      offset = 0;
-      document.getElementById('cards').innerHTML = "";
-      document.getElementById('modals').innerHTML = "";
-      
-      renderizarMaisCursos(); // Renderiza o primeiro lote de cursos filtrados
+        cursosFiltrados = cursos.filter(curso => {
+            // Regra 1: Esconder eliminados se o modo de edição estiver ativo
+            if (modoEdicaoAtivo && curso.isEliminado) {
+                return false;
+            }
+    
+            // Regra 2: Combinar todos os outros filtros
+            const instituicaoCurso = curso.Instituicao || "UFES";
+            return (
+                curso.Curso.toLowerCase().includes(texto) &&
+                (inst === "" || instituicaoCurso === inst) &&
+                (tipo === "" || curso.Tipo === tipo) &&
+                (campus === "" || curso.Campus === campus) &&
+                (duracao === "" || curso.Semestres.toString() === duracao)
+            );
+        });
+    
+        // Reseta a visualização e renderiza os resultados
+        offset = 0;
+        document.getElementById('cards').innerHTML = "";
+        document.getElementById('modals').innerHTML = "";
+        renderizarMaisCursos();
     }
 
     // --- INICIALIZAÇÃO DA PÁGINA ---
@@ -682,15 +687,23 @@
 
     //Funcções para remover os itens do modal em tempo real.
     function removerFavoritoDaLista(cursoId) {
+        // 1. Executa a lógica principal de desfavoritar
         toggleFavorito(cursoId);
+        // 2. Encontra e remove o item do modal da lista
         const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
-        if (cardNaLista) cardNaLista.remove();
+        if (cardNaLista) {
+            cardNaLista.remove();
+        }
     }
     
     function restaurarCursoDaLixeira(cursoId) {
+        // 1. Executa a lógica principal de restaurar
         toggleEliminado(cursoId);
+        // 2. Encontra e remove o item do modal da lixeira
         const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
-        if (cardNaLista) cardNaLista.remove();
+        if (cardNaLista) {
+            cardNaLista.remove();
+        }
     }
   
 </script>
