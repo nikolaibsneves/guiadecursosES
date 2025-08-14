@@ -162,12 +162,10 @@
         border-top: 1px solid #eee; /* Uma linha para separar */
         margin-top: 0.5rem;
       }
-      
       /* MOSTRA as ações quando o modo está ativo */
       body.modo-edicao-ativo .card-actions {
         display: flex;
       }
-      
       /* Estilo dos botões de ação (estrela e proibido) */
       .card-actions button {
         background: none;
@@ -178,59 +176,44 @@
         transition: transform 0.2s ease, color 0.2s ease;
         padding: 0 1rem; /* Adiciona espaço para facilitar o clique */
       }
-      
       /* Efeito ao passar o mouse ou tocar */
       .card-actions button:hover {
         transform: scale(1.2);
       }
+      /* Estilo para a estrela favoritada */
+      .card-actions button.favorito-ativo .material-symbols-outlined {
+        color: #ffc107; /* Amarelo ouro */
+        font-variation-settings: 'FILL' 1; /* Transforma o contorno em preenchido */
+      }
+      
+      /* --- ESTILOS DOS CONTROLES NO MENU DE FILTROS --- */
       
       /* Estilo para o botão principal de ligar/desligar o modo */
       #toggle-edit-mode {
         display: flex;
         align-items: center;
-        gap: 8px; /* Espaço entre o ícone e o texto */
+        gap: 8px;
         padding: 10px 15px;
-        background-color: #6c757d; /* Um cinza neutro */
+        background-color: #6c757d;
         color: white;
         border: none;
         border-radius: 5px;
         cursor: pointer;
-        font-size: 1rem; /* Mesmo tamanho dos outros filtros */
-        margin-left: auto; /* Alinha o botão à direita */
+        font-size: 1rem;
       }
-      
       #toggle-edit-mode.active {
-        background-color: #0056b3; /* Azul para indicar que está ativo */
+        background-color: #0056b3;
       }
-      
-      /* Ajuste para o cursor no card */
-      .card-clickable-area {
-          cursor: pointer;
-      }
-
-      /* Colorir o ícone preenchido. */
-      .card-actions button.favorito-ativo .material-symbols-outlined {
-        color: #ffc107; /* Amarelo ouro */
-        font-variation-settings: 'FILL' 1; /* Transforma o contorno em preenchido */
-      }
-    
-      .card.eliminado {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-    
-      /* Estilos para os botões de ação do menu */
+      /* Container para os botões de Favoritos, Lixeira, etc. */
       .edit-actions-container {
         display: none; /* Escondido por padrão */
         gap: 10px;
         margin-left: auto; /* Empurra para a direita */
       }
-      
       /* Mostra o container quando o modo de edição está ativo */
       body.modo-edicao-ativo .edit-actions-container {
         display: flex;
       }
-      
       .edit-actions-container button {
         display: flex;
         align-items: center;
@@ -242,7 +225,6 @@
         font-size: 1rem;
         background-color: #f0f0f0;
       }
-      
       .edit-actions-container button.danger {
         background-color: #dc3545; /* Vermelho perigo */
         color: white;
@@ -290,37 +272,37 @@
 
   <main>
     <section class="filtros" aria-label="Filtros de busca">
-      <input type="text" id="busca" placeholder="Buscar por nome do curso" />
-      <select id="instituicao">
-        <option value="">Todas as instituições</option>
-        <option value="UFES">UFES</option>
-        <option value="IFES">IFES</option>
-      </select>
-      <select id="tipo">
-        <option value="">Todos os tipos</option>
-        <option value="Licenciatura">Licenciatura</option>
-        <option value="Bacharelado">Bacharelado</option>
-      </select>
-      <select id="campus">
-        <option value="">Todos os campi</option>
-      </select>
-      <select id="duracao">
-        <option value="">Todas as durações</option>
-        <option value="8">8 semestres</option>
-        <option value="9">9 semestres</option>
-        <option value="10">10 semestres</option>
-      </select>
-
-      <button id="toggle-edit-mode">
-        <span class="material-symbols-outlined">tune</span>
-        Elimine e Favorite
-      </button>
+        <input type="text" id="busca" placeholder="Nome do curso" aria-label="Busca por nome do curso">
+        <select id="instituicao" aria-label="Instituição">
+          <option value="">Todas as instituições</option>
+          <option value="UFES">UFES</option>
+          <option value="IFES">IFES</option>
+        </select>
+        <select id="tipo" aria-label="Tipo de curso">
+          <option value="">Todos os tipos</option>
+          <option value="Licenciatura">Licenciatura</option>
+          <option value="Bacharelado">Bacharelado</option>
+        </select>
+        <select id="campus" aria-label="Campus">
+          <option value="">Todos os campi</option>
+        </select>
+        <select id="duracao" aria-label="Duração">
+          <option value="">Todas as durações</option>
+          <option value="8">8 semestres</option>
+          <option value="9">9 semestres</option>
+          <option value="10">10 semestres</option>
+        </select>
     
-      <div id="edit-actions" class="edit-actions-container">
-        <button id="show-favorites">⭐ Favoritos</button>
-        <button id="show-eliminated">🗑️ Lixeira</button>
-        <button id="clear-lists" class="danger">Limpar Tudo</button>
-      </div>
+        <button id="toggle-edit-mode">
+          <span class="material-symbols-outlined">tune</span>
+          Elimine e Favorite
+        </button>
+    
+        <div id="edit-actions" class="edit-actions-container">
+          <button id="show-favorites">⭐ Favoritos</button>
+          <button id="show-eliminated">🗑️ Lixeira</button>
+          <button id="clear-lists" class="danger">Limpar Tudo</button>
+        </div>
     </section>
 
     <p id="contador-cursos" style="font-weight:bold; margin-bottom:1rem;">Exibindo 0 cursos com os filtros selecionados</p>
@@ -346,44 +328,22 @@
   // --- FUNÇÕES PARA FAVORITAR E ELIMINAR ---
 
     function toggleFavorito(cursoId) {
-      const curso = cursos.find(c => c.id === cursoId);
-      if (!curso) return;
-    
-      // 1. Muda o estado nos dados
-      curso.isFavorito = !curso.isFavorito;
-    
-      // 2. Manipula o card específico na tela, SEM RECARREGAR
-      const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:nth-child(1)`);
-      const starIcon = cardButton.querySelector('.material-symbols-outlined');
-    
-      if (curso.isFavorito) {
-        cardButton.classList.add('favorito-ativo');
-        starIcon.textContent = 'star'; // Ícone preenchido
-      } else {
-        cardButton.classList.remove('favorito-ativo');
-        starIcon.textContent = 'star_border'; // Ícone de contorno
-      }
+        const curso = cursos.find(c => c.id === cursoId);
+        if (!curso) return;
+        curso.isFavorito = !curso.isFavorito;
+        const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:nth-child(1)`);
+        if (cardButton) {
+            const starIcon = cardButton.querySelector('.material-symbols-outlined');
+            cardButton.classList.toggle('favorito-ativo', curso.isFavorito);
+            starIcon.textContent = curso.isFavorito ? 'star' : 'star_border';
+        }
     }
     
     function toggleEliminado(cursoId) {
-      const curso = cursos.find(c => c.id === cursoId);
-      if (!curso) return;
-    
-      curso.isEliminado = !curso.isEliminado;
-      
-      const cardElement = document.getElementById(`card-${cursoId}`);
-      
-      // Adiciona a classe que fará a mágica do fade-out
-      cardElement.classList.toggle('eliminado', curso.isEliminado);
-    
-      // Apenas esconde o card se o modo de edição estiver ativo
-      if (modoEdicaoAtivo && curso.isEliminado) {
-          setTimeout(() => {
-              cardElement.style.display = 'none';
-          }, 300); // Espera a animação terminar antes de esconder de fato
-      } else {
-          cardElement.style.display = 'block';
-      }
+        const curso = cursos.find(c => c.id === cursoId);
+        if (!curso) return;
+        curso.isEliminado = !curso.isEliminado;
+        filtrarCursos(); // Força a atualização da tela para mostrar/esconder o card
     }
   
   // --- FUNÇÕES DE RENDERIZAÇÃO E UI ---
@@ -566,34 +526,34 @@
     }
 
     function abrirModalDeLista(titulo, listaDeCursos, isLixeira = false) {
-      // Garante que não haja um modal de lista antigo aberto
-      const modalAntigo = document.getElementById('lista-modal');
-      if (modalAntigo) modalAntigo.remove();
+        const modalAntigo = document.getElementById('lista-modal');
+        if (modalAntigo) modalAntigo.remove();
     
-      let cardsHTML = '';
-      if (listaDeCursos.length === 0) {
-        cardsHTML = '<p>Nenhum curso aqui. A lista está vazia.</p>';
-      } else {
-        listaDeCursos.forEach(curso => {
-          const nomeIcone = getIconeParaCurso(curso.Curso);
-          // A ação do botão agora também remove o card da lista do modal
-          const acaoBotao = isLixeira
-            ? `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️ Restaurar</button>`
-            : `<button title="Remover dos favoritos" onclick="removerFavoritoDaLista(${curso.id})">⭐</button>`;
-          
-          // Adicionamos um ID único para cada 'card-lista'
-          cardsHTML += `
+        let cardsHTML = '';
+        if (listaDeCursos.length === 0) {
+            cardsHTML = '<p>Nenhum curso aqui. A lista está vazia.</p>';
+        } else {
+            listaDeCursos.forEach(curso => {
+                const nomeIcone = getIconeParaCurso(curso.Curso);
+                const acaoBotao = isLixeira ?
+                    `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️ Restaurar</button>` :
+                    `<button title="Remover dos favoritos" onclick="removerFavoritoDaLista(${curso.id})">⭐</button>`;
+                cardsHTML += `
             <article class="card-lista" id="lista-card-${curso.id}">
               <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
-              <div class="card-content-lista">
-                <h2>${curso.Curso}</h2>
-                <p>${curso.Campus}</p>
-              </div>
+              <div class="card-content-lista"><h2>${curso.Curso}</h2><p>${curso.Campus}</p></div>
               <div class="card-actions-lista">${acaoBotao}</div>
-            </article>
-          `;
-        });
-      }
+            </article>`;
+            });
+        }
+        const modalHTML = `
+        <div id="lista-modal" class="modal" style="display:block;">
+          <div class="modal-content"><span class="close" onclick="fecharModal('lista-modal')">&times;</span>
+            <h2>${titulo}</h2><div class="container-lista">${cardsHTML}</div>
+          </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
     
       const modalHTML = `
         <div id="lista-modal" class="modal" style="display:block;">
@@ -640,123 +600,88 @@
     // --- INICIALIZAÇÃO DA PÁGINA ---
     // Ponto de entrada: carrega os dados do JSON e prepara a página
     document.addEventListener('DOMContentLoaded', () => {
-      fetch('dados_cursos_ufes_atualizado.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-          // 1. Primeiro, ordenamos os dados como antes
-          data.sort((a, b) => a.Curso.localeCompare(b.Curso));
-        
-          // 2. Agora, ao mapear, adicionamos TUDO que precisamos: id, isFavorito e isEliminado
-          cursos = data.map((curso, index) => ({
-            ...curso,             // Mantém todos os dados originais do JSON
-            id: index,            // Adiciona o ID sequencial e ordenado
-            isFavorito: false,    // Adiciona a chave para controlar os favoritos
-            isEliminado: false    // Adiciona a chave para controlar os eliminados
-          }));
-        
-          cursosFiltrados = [...cursos];
-          
-          // Preenche o filtro de campus com opções únicas do JSON
-          const campusSelect = document.getElementById('campus');
-          const campi = [...new Set(cursos.map(c => c.Campus).filter(c => c))].sort();
-          campi.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c;
-            opt.textContent = c;
-            campusSelect.appendChild(opt);
-          });
+        fetch('dados_cursos_ufes_atualizado.json')
+            .then(response => response.json())
+            .then(data => {
+                data.sort((a, b) => a.Curso.localeCompare(b.Curso));
+                cursos = data.map((curso, index) => ({
+                    ...curso,
+                    id: index,
+                    isFavorito: false,
+                    isEliminado: false
+                }));
+                cursosFiltrados = [...cursos];
+                const campusSelect = document.getElementById('campus');
+                [...new Set(cursos.map(c => c.Campus).filter(c => c))].sort().forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    campusSelect.appendChild(opt);
+                });
+                document.getElementById('busca').addEventListener('input', filtrarCursos);
+                document.getElementById('instituicao').addEventListener('change', filtrarCursos);
+                document.getElementById('tipo').addEventListener('change', filtrarCursos);
+                document.getElementById('campus').addEventListener('change', filtrarCursos);
+                document.getElementById('duracao').addEventListener('change', filtrarCursos);
     
-          // --- ADICIONA TODOS OS 'ESCUTADORES' DE EVENTOS DOS CONTROLES AQUI ---
-          document.getElementById('busca').addEventListener('input', filtrarCursos);
-          document.getElementById('instituicao').addEventListener('change', filtrarCursos);
-          document.getElementById('tipo').addEventListener('change', filtrarCursos);
-          document.getElementById('campus').addEventListener('change', filtrarCursos);
-          document.getElementById('duracao').addEventListener('change', filtrarCursos);
-          // Botão para mostrar os favoritos
-          document.getElementById('show-favorites').addEventListener('click', () => {
-            const favoritos = cursos.filter(c => c.isFavorito);
-            abrirModalDeLista('Meus Favoritos', favoritos);
-          });
-          
-          // Botão para mostrar a lixeira
-          document.getElementById('show-eliminated').addEventListener('click', () => {
-            const eliminados = cursos.filter(c => c.isEliminado);
-            abrirModalDeLista('Cursos na Lixeira', eliminados, true); // true indica que é a lixeira
-          });
-          
-          // Botão para limpar tudo
-          document.getElementById('clear-lists').addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja limpar suas listas de favoritos e eliminados? Esta ação não pode ser desfeita.')) {
-              cursos.forEach(c => {
-                c.isFavorito = false;
-                c.isEliminado = false;
-              });
-              // Força a atualização da tela para refletir a limpeza
-              filtrarCursos(); 
-            }
-          });
-          
-          // --- CÓDIGO PARA O BOTÃO LIGA/DESLIGA NO LUGAR CORRETO ---
-          const toggleButton = document.getElementById('toggle-edit-mode');
-           document.getElementById('toggle-edit-mode').addEventListener('click', () => {
-            modoEdicaoAtivo = !modoEdicaoAtivo;
-            document.body.classList.toggle('modo-edicao-ativo');
-            document.getElementById('toggle-edit-mode').classList.toggle('active');
-          
-            // Força a reaplicação dos filtros. Quando o modoEdicaoAtivo for false,
-            // a condição de esconder os eliminados não será atendida, e eles voltarão a aparecer.
-            filtrarCursos();
-          });
+                const toggleButton = document.getElementById('toggle-edit-mode');
+                toggleButton.addEventListener('click', () => {
+                    modoEdicaoAtivo = !modoEdicaoAtivo;
+                    document.body.classList.toggle('modo-edicao-ativo');
+                    toggleButton.classList.toggle('active');
+                    filtrarCursos();
+                });
     
-          // Carrega o primeiro lote de cursos
-          renderizarMaisCursos();
-        })
-        .catch(error => {
-          console.error('Erro fatal ao carregar dados:', error);
-          document.getElementById('cards').innerHTML = `<p style='color: red;'><strong>Erro:</strong> Não foi possível carregar os dados dos cursos. Verifique se o arquivo 'dados_cursos_ufes_atualizado.json' está na mesma pasta.</p>`;
+                document.getElementById('show-favorites').addEventListener('click', () => {
+                    const favoritos = cursos.filter(c => c.isFavorito);
+                    abrirModalDeLista('Meus Favoritos', favoritos);
+                });
+    
+                document.getElementById('show-eliminated').addEventListener('click', () => {
+                    const eliminados = cursos.filter(c => c.isEliminado);
+                    abrirModalDeLista('Cursos na Lixeira', eliminados, true);
+                });
+    
+                document.getElementById('clear-lists').addEventListener('click', () => {
+                    if (confirm('Tem certeza que deseja limpar suas listas? Esta ação não pode ser desfeita.')) {
+                        cursos.forEach(c => {
+                            c.isFavorito = false;
+                            c.isEliminado = false;
+                        });
+                        filtrarCursos();
+                    }
+                });
+                renderizarMaisCursos();
+            })
+            .catch(error => console.error('Erro fatal:', error));
+    
+        window.onclick = function(event) {
+            if (event.target.id === 'lista-modal') {
+                fecharModal('lista-modal');
+            } else if (event.target.classList.contains('modal')) {
+                fecharModal(event.target.id);
+            }
+        };
+    
+        window.addEventListener("scroll", () => {
+            const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200;
+            if (nearBottom && !carregando && offset < cursosFiltrados.length) {
+                renderizarMaisCursos();
+            }
         });
-    
-      // Evento para fechar modal clicando fora
-      window.onclick = function(event) {
-        if (event.target.classList.contains('modal')) {
-          fecharModal(event.target.id);
-        }
-      };
-      
-      // Evento para carregar mais cursos com a rolagem
-      window.addEventListener("scroll", () => {
-        // Condição para carregar mais: não estar carregando, ter mais cursos para mostrar, e estar perto do fim
-        const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200;
-        if (nearBottom && !carregando && offset < cursosFiltrados.length) {
-          renderizarMaisCursos();
-        }
-      });
     });
 
     //Funcções para remover os itens do modal em tempo real.
     function removerFavoritoDaLista(cursoId) {
-      // 1. Executa a lógica principal de desfavoritar
-      toggleFavorito(cursoId);
-      // 2. Encontra e remove o item do modal da lista
-      const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
-      if (cardNaLista) {
-        cardNaLista.remove();
-      }
+        toggleFavorito(cursoId);
+        const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
+        if (cardNaLista) cardNaLista.remove();
     }
     
     function restaurarCursoDaLixeira(cursoId) {
-      // 1. Executa a lógica principal de restaurar (que é a mesma de eliminar)
-      toggleEliminado(cursoId);
-      // 2. Encontra e remove o item do modal da lixeira
-      const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
-      if (cardNaLista) {
-        cardNaLista.remove();
-      }
+        toggleEliminado(cursoId);
+        const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
+        if (cardNaLista) cardNaLista.remove();
     }
   
 </script>
