@@ -264,21 +264,21 @@
           font-size: 1.5rem;
       }
       /* Define a animação de fade-out */
-      @keyframes fadeOutAndCollapse {
+       @keyframes fadeOutAndShrink {
         from {
           opacity: 1;
           transform: scale(1);
-          max-height: 500px;
-          padding: 1rem;
-          margin-bottom: 1.5rem;
         }
         to {
           opacity: 0;
-          transform: scale(0.9);
-          max-height: 0;
-          padding: 0;
-          margin-bottom: 0;
+          transform: scale(0.8); /* Encolhe para 80% do tamanho */
         }
+      }
+      
+      /* Aplica a nova animação, mais rápida */
+      .card.eliminando {
+        animation: fadeOutAndShrink 0.25s forwards; /* Metade do tempo original */
+        pointer-events: none;
       }
       
       /* Aplica a animação quando a classe for adicionada */
@@ -540,7 +540,8 @@
             // Escuta pelo fim da animação para remover o elemento de verdade
             cardElement.addEventListener('animationend', () => {
                 cardElement.remove();
-                verificarECarregarMaisSeNecessario();
+              atualizarContagem();
+              verificarECarregarMaisSeNecessario();
             }, { once: true });
     
         } else if (!curso.isEliminado) {
