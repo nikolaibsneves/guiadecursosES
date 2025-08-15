@@ -55,8 +55,13 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       overflow: hidden;
       cursor: pointer;
-      transition: transform 0.2s ease, opacity 0.3s ease; /* Adicione a transição de opacidade */
+      transition: transform 0.2s ease,
+                  opacity 0.3s ease,
+                  max-height 0.3s ease 0.3s, /* Anima a altura, com delay de 0.3s */
+                  padding 0.3s ease 0.3s,   /* Anima o padding, com delay de 0.3s */
+                  margin 0.3s ease 0.3s;    /* Anima a margem, com delay de 0.3s */
       opacity: 1; /* Garante que ele começa visível */
+      max-height: 500px; /* Um valor inicial alto para a animação funcionar */
     }
 
     .card:hover {
@@ -266,6 +271,12 @@
         transform: scale(0.95); /* Efeito de encolher um pouco */
         opacity: 0;            /* Efeito de desaparecer (fade-out) */
         pointer-events: none;  /* Impede que o usuário clique no card enquanto ele some */
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+        border-width: 0; /* Remove a borda para um colapso perfeito */
       }
   </style>
 </head>
