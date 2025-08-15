@@ -362,6 +362,11 @@
           Elimine e Favorite
         </button>
     
+        <button id="print-button">
+          <span class="material-symbols-outlined">print</span>
+          Imprimir Relação
+        </button>
+    
         <div id="edit-actions" class="edit-actions-container">
           <button id="show-favorites">⭐ Favoritos</button>
           <button id="show-eliminated">🗑️ Lixeira</button>
@@ -718,16 +723,16 @@
                         filtrarCursos();
                     }
                 });
+                
+                // Adiciona o listener para o botão de Imprimir
+                document.getElementById('print-button').addEventListener('click', () => {
+                  abrirModal('print-modal');
+                });
+                // Adiciona o listener para o botão "Gerar PDF" dentro do modal
+                document.getElementById('generate-pdf-btn').addEventListener('click', () => {
+                  gerarPDF(); 
+                });
 
-              // Adiciona o listener para o botão de Imprimir
-              document.getElementById('print-button').addEventListener('click', () => {
-                abrirModal('print-modal');
-              });
-              // Adiciona o listener para o botão "Gerar PDF" dentro do modal
-              document.getElementById('generate-pdf-btn').addEventListener('click', () => {
-                gerarPDF(); 
-              });
-              
                 renderizarMaisCursos(); // Carrega o primeiro lote de cursos
             })
             .catch(error => console.error('Erro fatal:', error));
