@@ -48,8 +48,6 @@
       min-height: 50vh;
     }
 
-    }
-
     .card {
       background-color: white;
       border-radius: 8px;
@@ -265,16 +263,28 @@
           cursor: pointer;
           font-size: 1.5rem;
       }
-      .card.eliminado {
-        transform: scale(0.95); /* Efeito de encolher um pouco */
-        opacity: 0;            /* Efeito de desaparecer (fade-out) */
-        pointer-events: none;  /* Impede que o usuário clique no card enquanto ele some */
-        max-height: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-        margin-top: 0;
-        margin-bottom: 0;
-        border-width: 0; /* Remove a borda para um colapso perfeito */
+      /* Define a animação de fade-out */
+      @keyframes fadeOutAndCollapse {
+        from {
+          opacity: 1;
+          transform: scale(1);
+          max-height: 500px;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+        }
+        to {
+          opacity: 0;
+          transform: scale(0.9);
+          max-height: 0;
+          padding: 0;
+          margin-bottom: 0;
+        }
+      }
+      
+      /* Aplica a animação quando a classe for adicionada */
+      .card.eliminando {
+        animation: fadeOutAndCollapse 0.5s forwards;
+        pointer-events: none;
       }
   </style>
 </head>
@@ -519,24 +529,23 @@
         const curso = cursos.find(c => c.id === cursoId);
         if (!curso) return;
     
-        // 1. Atualiza o estado dos dados em segundo plano
         curso.isEliminado = !curso.isEliminado;
     
-        if (!curso.isEliminado) {
-        // Se estamos RESTAURANDO um curso, a melhor abordagem é redesenhar a lista
-        // para que ele apareça no lugar alfabético correto.
-        filtrarCursos();
-        } else {
-            // Se estamos ELIMINANDO, usamos a animação suave.
-            const cardElement = document.getElementById(`card-${cursoId}`);
-            if (cardElement) {
-                cardElement.style.opacity = '0';
-                cardElement.style.transform = 'scale(0.95)';
-                cardElement.addEventListener('transitionend', () => {
-                    cardElement.remove();
-                    verificarECarregarMaisSeNecessario();
-                }, { once: true });
-            }
+        const cardElement = document.getElementById(`card-${cursoId}`);
+    
+        if (curso.isEliminado && cardElement) {
+            // Se estamos ELIMINANDO
+            cardElement.classList.add('eliminando'); // Adiciona a classe para iniciar a animação
+    
+            // Escuta pelo fim da animação para remover o elemento de verdade
+            cardElement.addEventListener('animationend', () => {
+                cardElement.remove();
+                verificarECarregarMaisSeNecessario();
+            }, { once: true });
+    
+        } else if (!curso.isEliminado) {
+            // Se estamos RESTAURANDO, a abordagem de recarregar a lista é a melhor
+            filtrarCursos();
         }
     }
 
