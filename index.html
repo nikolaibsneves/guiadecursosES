@@ -42,10 +42,11 @@
     }
 
     .card-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      display: flex;       /* <-- MUDAMOS DE GRID PARA FLEX */
+      flex-wrap: wrap;     /* <-- Permite que os cards quebrem a linha */
       gap: 1.5rem;
-      min-height: 50vh; /* altura mínima para não disparar o scroll quando aplicar um filtro */
+      min-height: 50vh;
+    }
 
     }
 
@@ -53,6 +54,9 @@
       background-color: white;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      flex-basis: 250px; /* Define a largura base do card (o 'minmax') */
+      flex-grow: 1;      /* Permite que o card cresça para preencher o espaço (o '1fr') */
+      flex-shrink: 1;    /* Permite que o card encolha se necessário */
       overflow: hidden;
       cursor: pointer;
       transition: transform 0.2s ease,
