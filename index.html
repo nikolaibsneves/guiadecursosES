@@ -54,6 +54,8 @@
       background-color: white;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column; /* Organiza o conteúdo do card em coluna */
       flex-basis: 250px; /* Define a largura base do card (o 'minmax') */
       flex-grow: 1;      /* Permite que o card cresça para preencher o espaço (o '1fr') */
       flex-shrink: 1;    /* Permite que o card encolha se necessário */
@@ -64,6 +66,7 @@
                   max-height 0.3s ease 0.3s, /* Anima a altura, com delay de 0.3s */
                   padding 0.3s ease 0.3s,   /* Anima o padding, com delay de 0.3s */
                   margin 0.3s ease 0.3s;    /* Anima a margem, com delay de 0.3s */
+                  border-width 0.3s ease 0.3s; /* Adicionado para a borda sumir suavemente */
       opacity: 1; /* Garante que ele começa visível */
       max-height: 500px; /* Um valor inicial alto para a animação funcionar */
     }
@@ -80,6 +83,7 @@
 
     .card-content {
       padding: 1rem;
+      flex-grow: 1; /* <-- ESTA É A PROPRIEDADE MÁGICA QUE IGUALA AS ALTURAS */
     }
 
     .card-content h2 {
@@ -439,15 +443,21 @@
             atualizarContagem();
             document.getElementById('loader').style.display = "none";
             carregando = false;
-            setTimeout(() => {
-                const temBarraDeRolagem = document.documentElement.scrollHeight > window.innerHeight;
-                if (!temBarraDeRolagem && offset < cursosFiltrados.length) {
-                    renderizarMaisCursos();
-                }
-            }, 100);
-        }, 300);
+            // Agora apenas chama nossa nova função centralizada
+            verificarECarregarMaisSeNecessario();
+          }, 300);
     }
 
+    function verificarECarregarMaisSeNecessario() {
+      // Usamos um pequeno delay para garantir que o navegador já recalculou o layout
+      setTimeout(() => {
+        const temBarraDeRolagem = document.documentElement.scrollHeight > window.innerHeight;
+        if (!temBarraDeRolagem && offset < cursosFiltrados.length && !carregando) {
+          renderizarMaisCursos();
+        }
+      }, 400); // Um delay um pouco maior após a animação de remoção
+    }
+  
     function filtrarCursos() {
         const texto = document.getElementById('busca').value.toLowerCase();
         const inst = document.getElementById('instituicao').value;
@@ -526,6 +536,8 @@
             // 3. Adiciona ou remove a classe 'eliminado' para ativar a animação do CSS
             cardElement.classList.toggle('eliminado', curso.isEliminado);
         }
+      // Após eliminar, chama a verificação para carregar mais se a barra de rolagem sumiu
+      verificarECarregarMaisSeNecessario();
     }
 
     function abrirModalDeLista(titulo, listaDeCursos, isLixeira = false) {
