@@ -57,7 +57,7 @@
       flex-direction: column; /* Organiza o conteúdo do card em coluna */
       transition: transform 0.2s ease, opacity 0.3s ease; /* Transição mais simples */
       opacity: 1;
-}
+    }
 
     .card:hover {
       transform: scale(1.03);
@@ -265,11 +265,7 @@
       }
       /* Define a animação de fade-out */
        @keyframes fadeOutAndShrink {
-        from {
-          opacity: 1;
-          transform: scale(1);
-        }
-        to {
+         to {
           opacity: 0;
           transform: scale(0.8); /* Encolhe para 80% do tamanho */
         }
@@ -531,22 +527,32 @@
     
         curso.isEliminado = !curso.isEliminado;
     
-        const cardElement = document.getElementById(`card-${cursoId}`);
-    
-        if (curso.isEliminado && cardElement) {
-            // Se estamos ELIMINANDO
-            cardElement.classList.add('eliminando'); // Adiciona a classe para iniciar a animação
-    
-            // Escuta pelo fim da animação para remover o elemento de verdade
-            cardElement.addEventListener('animationend', () => {
-                cardElement.remove();
-              atualizarContagem();
-              verificarECarregarMaisSeNecessario();
-            }, { once: true });
-    
-        } else if (!curso.isEliminado) {
-            // Se estamos RESTAURANDO, a abordagem de recarregar a lista é a melhor
+        // Se estamos RESTAURANDO um curso da lixeira
+        if (!curso.isEliminado) {
+            // A melhor abordagem é redesenhar a lista para que ele
+            // apareça no lugar alfabético correto.
             filtrarCursos();
+            return; 
+        }
+    
+        // Se estamos ELIMINANDO um curso
+        const cardElement = document.getElementById(`card-${cursoId}`);
+        if (cardElement) {
+            // Adiciona a classe que dispara a animação CSS
+            cardElement.classList.add('eliminando');
+    
+            // Escutamos pelo evento 'animationend', que é mais confiável que 'transitionend'
+            cardElement.addEventListener('animationend', () => {
+                // Só depois que a animação ACABA, o card é removido de verdade.
+                // Isso força o grid a se reorganizar.
+                cardElement.remove();
+                
+                // Atualizamos o contador após a remoção
+                atualizarContagem();
+    
+                // E verificamos se precisa carregar mais cursos
+                verificarECarregarMaisSeNecessario();
+            }, { once: true }); // {once: true} garante que isso só aconteça uma vez por clique
         }
     }
 
