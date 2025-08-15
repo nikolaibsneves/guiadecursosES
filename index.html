@@ -262,7 +262,11 @@
           cursor: pointer;
           font-size: 1.5rem;
       }
-    
+      .card.eliminado {
+        transform: scale(0.95); /* Efeito de encolher um pouco */
+        opacity: 0;            /* Efeito de desaparecer (fade-out) */
+        pointer-events: none;  /* Impede que o usuário clique no card enquanto ele some */
+      }
   </style>
 </head>
 <body>
@@ -499,8 +503,14 @@
     function toggleEliminado(cursoId) {
         const curso = cursos.find(c => c.id === cursoId);
         if (!curso) return;
+        // 1. Atualiza o estado dos dados em segundo plano
         curso.isEliminado = !curso.isEliminado;
-        filtrarCursos();
+        // 2. Encontra o card na tela
+        const cardElement = document.getElementById(`card-${cursoId}`);
+        if (cardElement) {
+            // 3. Adiciona ou remove a classe 'eliminado' para ativar a animação do CSS
+            cardElement.classList.toggle('eliminado', curso.isEliminado);
+        }
     }
 
     function abrirModalDeLista(titulo, listaDeCursos, isLixeira = false) {
