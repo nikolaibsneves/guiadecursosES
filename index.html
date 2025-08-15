@@ -679,14 +679,13 @@
         }
     };
     
-        window.addEventListener("scroll", () => {
-            const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200;
-            if (nearBottom && !carregando && offset < cursosFiltrados.length) {
-                renderizarMaisCursos();
-            }
-        });
+    window.addEventListener("scroll", () => {
+        const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200;
+        if (nearBottom && !carregando && offset < cursosFiltrados.length) {
+            renderizarMaisCursos();
+        }
     });
-
+    
     //Funcções para remover os itens do modal em tempo real.
     function removerFavoritoDaLista(cursoId) {
         // 1. Executa a lógica principal de desfavoritar
