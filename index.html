@@ -6,6 +6,9 @@
   <title>Catálogo de Cursos Superiores Gratuitos no ES</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -275,6 +278,55 @@
         animation: fadeOutAndShrink 0.25s forwards;
         pointer-events: none;
       }
+
+      /* Estilo para o botão de Imprimir */
+      #print-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        background-color: #28a745; /* Verde para destacar a ação */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+      
+      /* Estilos para as opções dentro do modal de impressão */
+      .print-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .print-options label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .print-actions {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: flex-end; /* Alinha os botões à direita */
+        gap: 1rem;
+      }
+      .print-actions button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      .print-actions .confirm-btn {
+        background-color: #0056b3;
+        color: white;
+      }
+      .print-actions .cancel-btn {
+        background-color: #ccc;
+      }
+    
   </style>
 </head>
 <body>
@@ -328,6 +380,30 @@
 
   <div id="modals"></div>
 
+  <div id="print-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="fecharModal('print-modal')">&times;</span>
+      <h2>Opções de Impressão</h2>
+      <p>Você gostaria de imprimir:</p>
+      <div class="print-options">
+        <label><input type="checkbox" id="print-favoritos" checked> Favoritos</label>
+        <label><input type="checkbox" id="print-emduvida" checked> Em dúvida</label>
+        <label><input type="checkbox" id="print-eliminados"> Eliminados</label>
+      </div>
+  
+      <p style="margin-top: 1.5rem;">Considerar os cursos na tela:</p>
+      <div class="print-options">
+        <label><input type="radio" name="print-source" id="print-source-todos" value="todos" required> Ignorar filtros ativos</label>
+        <label><input type="radio" name="print-source" id="print-source-filtrados" value="filtrados" required> Usar apenas cursos filtrados</label>
+      </div>
+  
+      <div class="print-actions">
+        <button class="cancel-btn" onclick="fecharModal('print-modal')">Cancelar</button>
+        <button class="confirm-btn" id="generate-pdf-btn">Gerar PDF</button>
+      </div>
+    </div>
+  </div>
+  
 <script>
     // Variáveis globais para controlar o estado da página
     let cursos = [];
@@ -642,7 +718,16 @@
                         filtrarCursos();
                     }
                 });
-                
+
+              // Adiciona o listener para o botão de Imprimir
+              document.getElementById('print-button').addEventListener('click', () => {
+                abrirModal('print-modal');
+              });
+              // Adiciona o listener para o botão "Gerar PDF" dentro do modal
+              document.getElementById('generate-pdf-btn').addEventListener('click', () => {
+                gerarPDF(); 
+              });
+              
                 renderizarMaisCursos(); // Carrega o primeiro lote de cursos
             })
             .catch(error => console.error('Erro fatal:', error));
@@ -662,6 +747,99 @@
             }
         });
     });
+
+    // Função principal que lê as opções, prepara os dados e gera o PDF
+    function gerarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+    
+      // 1. LER AS OPÇÕES DO MODAL
+      const incluirFavoritos = document.getElementById('print-favoritos').checked;
+      const incluirEmDuvida = document.getElementById('print-emduvida').checked;
+      const incluirEliminados = document.getElementById('print-eliminados').checked;
+    
+      const fonteTodos = document.getElementById('print-source-todos').checked;
+      const fonteFiltrados = document.getElementById('print-source-filtrados').checked;
+    
+      // Validação: Garante que uma das fontes de dados foi selecionada
+      if (!fonteTodos && !fonteFiltrados) {
+        alert('Por favor, selecione se deseja ignorar os filtros ou usar apenas os cursos filtrados.');
+        return; // Para a execução
+      }
+    
+      // 2. SELECIONAR A LISTA DE CURSOS BASE
+      // Decide se vamos usar a lista completa (cursos) ou a que já está filtrada na tela (cursosFiltrados)
+      const listaBase = fonteFiltrados ? cursosFiltrados : cursos;
+    
+      // 3. PREPARAR OS DADOS PARA A TABELA
+      const corpoTabela = []; // Array que vai conter as linhas da nossa tabela
+      const cabecalho = [['Curso', 'Tipo', 'Instituição', 'Campus', 'Horário', 'Duração', 'Acesso']];
+    
+      // Função auxiliar para adicionar cursos à tabela
+      const adicionarCursosNaTabela = (lista, categoria) => {
+        // Adiciona uma linha de título para a categoria
+        if (lista.length > 0) {
+          corpoTabela.push([{ content: `--- ${categoria} ---`, colSpan: 7, styles: { fontStyle: 'bold', fillColor: '#d3d3d3' } }]);
+        }
+        // Adiciona as linhas de dados de cada curso
+        lista.forEach(curso => {
+          corpoTabela.push([
+            curso.Curso,
+            curso.Tipo,
+            curso.Instituicao || 'UFES',
+            curso.Campus,
+            curso.Horário,
+            `${curso.Semestres} semestres`,
+            curso['Forma de acesso']
+          ]);
+        });
+      };
+    
+      // Filtra e adiciona cada categoria de curso, se selecionada
+      if (incluirFavoritos) {
+        const favoritos = listaBase.filter(c => c.isFavorito);
+        adicionarCursosNaTabela(favoritos, 'Cursos Favoritos');
+      }
+      if (incluirEmDuvida) {
+        const emDuvida = listaBase.filter(c => !c.isFavorito && !c.isEliminado);
+        adicionarCursosNaTabela(emDuvida, 'Em Dúvida');
+      }
+      if (incluirEliminados) {
+        const eliminados = listaBase.filter(c => c.isEliminado);
+        adicionarCursosNaTabela(eliminados, 'Cursos Eliminados');
+      }
+    
+      // Validação: Se nenhuma lista tiver cursos, avisa o usuário
+      if (corpoTabela.length === 0) {
+        alert('Nenhum curso para imprimir com as opções selecionadas.');
+        return;
+      }
+    
+      // 4. GERAR O PDF
+      doc.autoTable({
+        head: cabecalho,
+        body: corpoTabela,
+        startY: 20, // Posição inicial da tabela na página
+        didDrawPage: function(data) {
+          // Adiciona um título ao documento
+          doc.setFontSize(16);
+          doc.text("Relação de Cursos Selecionados", data.settings.margin.left, 15);
+        },
+        // Estilo para as linhas alternadas (zebra)
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245] // Cinza claro
+        }
+      });
+    
+      // Fecha o modal e salva o arquivo
+      fecharModal('print-modal');
+      doc.save('minha-lista-de-cursos.pdf');
+    }
+  
 </script>
 </body>
 </html>
