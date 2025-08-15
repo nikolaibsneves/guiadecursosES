@@ -671,11 +671,13 @@
             .catch(error => console.error('Erro fatal:', error));
     
         // Listeners Globais (fora do fetch, mas dentro do DOMContentLoaded)
-        window.onclick = function(event) {
-            if (event.target.id === 'lista-modal' || event.target.classList.contains('modal')) {
-                fecharModal(event.target.id);
-            }
-        };
+    window.onclick = function(event) {
+        if (event.target.id === 'lista-modal') { // Se clicar no fundo do modal de lista
+            fecharModal('lista-modal');
+        } else if (event.target.classList.contains('modal')) { // Se clicar no fundo de qualquer outro modal
+            fecharModal(event.target.id);
+        }
+    };
     
         window.addEventListener("scroll", () => {
             const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200;
