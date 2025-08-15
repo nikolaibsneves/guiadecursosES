@@ -539,7 +539,13 @@
                 // Só depois que a animação ACABA, o card é removido de verdade.
                 // Isso força o grid a se reorganizar.
                 cardElement.remove();
-                
+             // Encontra o índice do curso removido na lista filtrada
+            const index = cursosFiltrados.findIndex(c => c.id === cursoId);
+            // Se encontrar, remove-o da lista na memória
+            if (index > -1) {
+                cursosFiltrados.splice(index, 1);
+            }
+              
                 // Atualizamos o contador após a remoção
                 atualizarContagem();
     
