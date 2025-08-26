@@ -579,6 +579,11 @@
     }
 
     function getLogoParaInstituicao(nomeInstituicao) {
+        // PRIMEIRO, VERIFICA SE EXISTE UM NOME. Se não, retorna vazio e evita o erro.
+        if (!nomeInstituicao) {
+            return '';
+        }
+    
         const nome = nomeInstituicao.toUpperCase();
         if (nome === 'UFES') {
             return 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Ufes_bras%C3%A3o.png';
@@ -587,10 +592,9 @@
             return 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Ifes_vertical_logo.svg';
         }
         if (nome === 'FAMES') {
-            // Exemplo, você pode trocar por um link oficial quando tiver
             return 'https://www.fames.es.gov.br/Media/fames/Imagens/logo_fames_vertical.png';
         }
-        return ''; // Retorna vazio se não encontrar um logo
+        return ''; // Retorna vazio para qualquer outra instituição
     }
   
     function getIconeParaCurso(nomeDoCurso) {
