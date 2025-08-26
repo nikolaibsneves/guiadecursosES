@@ -155,7 +155,24 @@
         font-size: 0.85rem; /* Fonte menor para os parágrafos */
       }
     }
-
+    
+    .card-icon-wrapper {
+      position: relative; /* Cria um contexto para posicionar o logo */
+      text-align: center;
+    }
+    
+    .institution-logo {
+      position: absolute; /* Posicionamento flutuante */
+      top: 8px;
+      right: 8px;
+      width: 40px;  /* Tamanho do logo */
+      height: 40px; /* Tamanho do logo */
+      background-color: white;
+      border-radius: 50%; /* Deixa o fundo do logo redondo */
+      padding: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      object-fit: contain;
+    }
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
       
       /* Esconde as ações do card por padrão */
@@ -331,7 +348,7 @@
 </head>
 <body>
   <header>
-    <h1 id="site-title">Guia de Cursos Superiores Gratuitos no ES</h1>
+    <h1 id="site-title">Catálogo de Cursos Superiores em Instituições Públicas no ES</h1>
   </header>
 
   <main>
@@ -422,26 +439,34 @@
 
     function criarCard(curso) {
         const nomeIcone = getIconeParaCurso(curso.Curso);
+        const logoUrl = getLogoParaInstituicao(curso.Instituicao);
         const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
         const iconeEstrela = curso.isFavorito ? 'star' : 'star_border';
+        
         return `
-    <article class="card" id="card-${curso.id}">
-      <div class="card-clickable-area" onclick="abrirModal('modal-${curso.id}')">
-        <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
-        <div class="card-content">
-          <h2>${curso.Curso}</h2>
-          <p><strong>Campus:</strong> ${curso.Campus}</p>
-          <p><strong>Tipo:</strong> ${curso.Tipo}</p>
-          <p><strong>Duração:</strong> ${curso.Semestres} semestres</p>
-        </div>
-      </div>
-      <div class="card-actions">
-        <button title="Favoritar curso" class="${classeFavorito}" onclick="toggleFavorito(${curso.id})">
-          <span class="material-symbols-outlined">${iconeEstrela}</span>
-        </button>
-        <button title="Eliminar curso" onclick="toggleEliminado(${curso.id})">🚫</button>
-      </div>
-    </article>`;
+        <article class="card" id="card-${curso.id}">
+          <div class="card-clickable-area" onclick="abrirModal('modal-${curso.id}')">
+            
+            <div class="card-icon-wrapper">
+              <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
+              ${logoUrl ? `<img src="${logoUrl}" alt="Logo ${curso.Instituicao}" class="institution-logo">` : ''}
+            </div>
+    
+            <div class="card-content">
+              <h2>${curso.Curso}</h2>
+              <p><strong>Instituição:</strong> ${curso.Instituicao || 'N/A'}</p>
+              <p><strong>Campus:</strong> ${curso.Campus}</p>
+              <p><strong>Tipo:</strong> ${curso.Tipo}</p>
+              <p><strong>Duração:</strong> ${curso.Semestres} semestres</p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button title="Favoritar curso" class="${classeFavorito}" onclick="toggleFavorito(${curso.id})">
+              <span class="material-symbols-outlined">${iconeEstrela}</span>
+            </button>
+            <button title="Eliminar curso" onclick="toggleEliminado(${curso.id})">🚫</button>
+          </div>
+        </article>`;
     }
 
     function criarModal(curso) {
@@ -553,16 +578,32 @@
         renderizarMaisCursos();
     }
 
+    function getLogoParaInstituicao(nomeInstituicao) {
+        const nome = nomeInstituicao.toUpperCase();
+        if (nome === 'UFES') {
+            return 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Ufes_bras%C3%A3o.png';
+        }
+        if (nome === 'IFES') {
+            return 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Ifes_vertical_logo.svg';
+        }
+        if (nome === 'FAMES') {
+            // Exemplo, você pode trocar por um link oficial quando tiver
+            return 'https://www.fames.es.gov.br/Media/fames/Imagens/logo_fames_vertical.png';
+        }
+        return ''; // Retorna vazio se não encontrar um logo
+    }
+  
     function getIconeParaCurso(nomeDoCurso) {
         const nome = nomeDoCurso.toUpperCase();
+        // Regras mais específicas vêm primeiro
+        if (nome.includes('EDUCAÇÃO FÍSICA')) return 'sports_gymnastics'; // Ícone para Ed. Física
+        if (nome.includes('FÍSICA')) return 'atom'; // Ícone para Física (quântica, etc.)
         if (nome.includes('ENGENHARIA')) return 'engineering';
         if (nome.includes('COMPUTAÇÃO') || nome.includes('SISTEMAS')) return 'computer';
         if (nome.includes('DIREITO')) return 'gavel';
         if (nome.includes('MEDICINA')) return 'local_hospital';
         if (nome.includes('ARQUITETURA')) return 'architecture';
         if (nome.includes('QUÍMICA')) return 'science';
-        if (nome.includes('FÍSICA')) return 'calculate';
-        if (nome.includes('EDUCAÇÃO FÍSICA')) return 'athletics';
         if (nome.includes('BIOLÓGICAS') || nome.includes('BIOLOGIA')) return 'biotech';
         if (nome.includes('MATEMÁTICA')) return 'functions';
         if (nome.includes('LETRAS')) return 'translate';
