@@ -91,8 +91,9 @@
     .card-icon {
       font-size: 64px; /* Tamanho do ícone */
       color: #003366; /* Cor do ícone (azul escuro) */
-      /* Removemos o text-align: center daqui, pois o flexbox já cuida */
-      display: block; /* Garante que o span se comporte como bloco */
+      flex-shrink: 0; /* Impede que o ícone encolha se o logo for grande */
+      margin-right: 10px; /* Um pequeno espaçamento entre o ícone e o logo */
+      max-width: 50%; /* Garante que o ícone não ocupe mais que a metade, se precisar */
     }
     
     .modal {
@@ -160,24 +161,26 @@
     .card-icon-wrapper {
       position: relative; /* Contexto para posicionar a logo */
       display: flex; /* Para alinhar o ícone e a logo no topo */
-      align-items: flex-start; /* Alinha o início dos itens */
+      align-items: center; /* Alinha o centro dos itens verticalmente */
       justify-content: space-between; /* Empurra logo para um lado e ícone para outro */
-      padding: 1rem 1rem 0 1rem; /* Espaçamento interno */
+      padding: 1rem 1rem 0 1rem; /* Espaçamento interno (topo, lados, sem baixo por enquanto) */
       min-height: 80px; /* Garante espaço mínimo */
+      box-sizing: border-box; /* Garante que padding não aumente o tamanho total */
+      width: 100%; /* Ocupa toda a largura disponível */
     }
     
       /* Estilo para a logo da instituição */
-      .institution-logo {
-        /* Não precisa de absolute, vamos usar o fluxo do flexbox */
-        width: 50px; /* Tamanho maior para o logo */
-        height: 50px; /* Tamanho maior para o logo */
-        object-fit: contain; /* Garante que a imagem se ajuste sem cortar */
-        margin-left: auto; /* Empurra o logo para a direita */
-        background-color: transparent; /* Fundo transparente, já que a imagem já tem */
-        border-radius: 0; /* Remove bordas arredondadas */
-        box-shadow: none; /* Remove sombra */
-        /* Remove top e right já que o flexbox fará o posicionamento */
-      }
+    .institution-logo {
+      max-width: 50%; /* Ocupa no máximo 50% da largura do pai (.card-icon-wrapper) */
+      height: auto; /* Mantém a proporção da imagem automaticamente */
+      max-height: 60px; /* Limita a altura máxima para não esticar verticalmente demais */
+      object-fit: contain; /* Garante que a imagem se ajuste sem cortar ou distorcer */
+      margin-left: auto; /* Empurra o logo para a direita */
+      background-color: transparent; /* Remove qualquer fundo branco que possa ter sido adicionado */
+      border-radius: 0; /* Remove bordas arredondadas, se houver */
+      box-shadow: none; /* Remove sombra, se houver */
+      display: block; /* Garante que se comporte como um bloco para o layout */
+    }
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
       
       /* Esconde as ações do card por padrão */
