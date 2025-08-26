@@ -364,22 +364,15 @@
         <input type="text" id="busca" placeholder="Nome do curso" aria-label="Busca por nome do curso">
         <select id="instituicao" aria-label="Instituição">
           <option value="">Todas as instituições</option>
-          <option value="UFES">UFES</option>
-          <option value="IFES">IFES</option>
         </select>
         <select id="tipo" aria-label="Tipo de curso">
           <option value="">Todos os tipos</option>
-          <option value="Licenciatura">Licenciatura</option>
-          <option value="Bacharelado">Bacharelado</option>
         </select>
         <select id="campus" aria-label="Campus">
           <option value="">Todos os campi</option>
         </select>
         <select id="duracao" aria-label="Duração">
           <option value="">Todas as durações</option>
-          <option value="8">8 semestres</option>
-          <option value="9">9 semestres</option>
-          <option value="10">10 semestres</option>
         </select>
     
         <button id="toggle-edit-mode">
@@ -559,6 +552,38 @@
           renderizarMaisCursos();
         }
       }, 400); // Um delay um pouco maior após a animação de remoção
+    }
+
+    /**
+     * Popula um elemento <select> com opções únicas baseadas nos dados dos cursos.
+     * @param {string} filtroId - O ID do elemento <select> no HTML (ex: 'instituicao').
+     * @param {string} chave - O nome da propriedade no objeto do curso (ex: 'Instituição').
+     */
+    function popularFiltro(filtroId, chave) {
+      const selectElement = document.getElementById(filtroId);
+      
+      // 1. Pega todos os valores para a chave especificada.
+      const valores = cursos.map(c => c[chave]);
+      
+      // 2. Filtra para ter apenas valores únicos e remove quaisquer valores vazios/nulos.
+      const valoresUnicos = [...new Set(valores)].filter(valor => valor);
+      
+      // 3. Ordena os valores (numericamente se forem números, alfabeticamente caso contrário).
+      valoresUnicos.sort((a, b) => {
+        if (typeof a === 'number' && typeof b === 'number') {
+          return a - b; // Ordenação numérica
+        }
+        return String(a).localeCompare(String(b)); // Ordenação alfabética
+      });
+      
+      // 4. Cria e adiciona um <option> para cada valor único.
+      valoresUnicos.forEach(valor => {
+        const opt = document.createElement('option');
+        opt.value = valor;
+        // Adiciona "semestres" ao texto se for o filtro de duração
+        opt.textContent = (filtroId === 'duracao') ? `${valor} semestres` : valor;
+        selectElement.appendChild(opt);
+      });
     }
   
     function filtrarCursos() {
@@ -741,12 +766,11 @@
                 cursos = data.map((curso, index) => ({...curso, id: index, isFavorito: false, isEliminado: false}));
                 cursosFiltrados = [...cursos];
                 
-                const campusSelect = document.getElementById('campus');
-                [...new Set(cursos.map(c => c.Campus).filter(c => c))].sort().forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c; opt.textContent = c;
-                    campusSelect.appendChild(opt);
-                });
+                // Popula os filtros dinamicamente com base nos dados carregados
+                popularFiltro('instituicao', 'Instituição');
+                popularFiltro('tipo', 'Tipo');
+                popularFiltro('campus', 'Campus');
+                popularFiltro('duracao', 'Semestres');
 
                 // Adiciona os 'escutadores' de eventos para os filtros
                 document.getElementById('busca').addEventListener('input', filtrarCursos);
