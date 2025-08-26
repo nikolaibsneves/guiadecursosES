@@ -439,7 +439,7 @@
 
     function criarCard(curso) {
         const nomeIcone = getIconeParaCurso(curso.Curso);
-        const logoUrl = getLogoParaInstituicao(curso.Instituicao);
+        const logoUrl = getLogoParaInstituicao(curso.Instituição);
         const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
         const iconeEstrela = curso.isFavorito ? 'star' : 'star_border';
         
@@ -449,12 +449,12 @@
             
             <div class="card-icon-wrapper">
               <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
-              ${logoUrl ? `<img src="${logoUrl}" alt="Logo ${curso.Instituicao}" class="institution-logo">` : ''}
+              ${logoUrl ? `<img src="${logoUrl}" alt="Logo ${curso.Instituição}" class="institution-logo">` : ''}
             </div>
     
             <div class="card-content">
               <h2>${curso.Curso}</h2>
-              <p><strong>Instituição:</strong> ${curso.Instituicao || 'N/A'}</p>
+              <p><strong>Instituição:</strong> ${curso.Instituição || 'N/A'}</p>
               <p><strong>Campus:</strong> ${curso.Campus}</p>
               <p><strong>Tipo:</strong> ${curso.Tipo}</p>
               <p><strong>Duração:</strong> ${curso.Semestres} semestres</p>
@@ -477,7 +477,7 @@
         ${curso.VideoID ? `<iframe data-src="https://www.youtube.com/embed/${curso.VideoID}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>` : ''}
         <h2>${curso.Curso}</h2>
         <p><strong>Tipo:</strong> ${curso.Tipo}</p>
-        <p><strong>Instituição:</strong> ${curso.Instituicao || "UFES"}</p>
+        <p><strong>Instituição:</strong> ${curso.Instituição || "UFES"}</p>
         <p><strong>Campus:</strong> ${curso.Campus}</p>
         <p><strong>Horário:</strong> ${curso.Horário}</p>
         <p><strong>Acesso:</strong> ${curso["Forma de acesso"]}</p>
@@ -563,7 +563,7 @@
             if (modoEdicaoAtivo && curso.isEliminado) {
                 return false;
             }
-            const instituicaoCurso = curso.Instituicao || "UFES";
+            const instituicaoCurso = curso.Instituição || "UFES";
             return (
                 curso.Curso.toLowerCase().includes(texto) &&
                 (inst === "" || instituicaoCurso === inst) &&
@@ -837,7 +837,7 @@
           corpoTabela.push([
             curso.Curso,
             curso.Tipo,
-            curso.Instituicao || 'UFES',
+            curso.Instituição || 'UFES',
             curso.Campus,
             curso.Horário,
             `${curso.Semestres} semestres`,
