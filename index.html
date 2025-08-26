@@ -87,12 +87,12 @@
       margin: 0;
     }
     
+    /* Ícone do curso */
     .card-icon {
       font-size: 64px; /* Tamanho do ícone */
       color: #003366; /* Cor do ícone (azul escuro) */
-      text-align: center;
-      padding: 1rem 0;
-      display: block;
+      /* Removemos o text-align: center daqui, pois o flexbox já cuida */
+      display: block; /* Garante que o span se comporte como bloco */
     }
     
     .modal {
@@ -156,23 +156,28 @@
       }
     }
     
+    /* Ajustes para o Wrapper do Ícone e Logo */
     .card-icon-wrapper {
-      position: relative; /* Cria um contexto para posicionar o logo */
-      text-align: center;
+      position: relative; /* Contexto para posicionar a logo */
+      display: flex; /* Para alinhar o ícone e a logo no topo */
+      align-items: flex-start; /* Alinha o início dos itens */
+      justify-content: space-between; /* Empurra logo para um lado e ícone para outro */
+      padding: 1rem 1rem 0 1rem; /* Espaçamento interno */
+      min-height: 80px; /* Garante espaço mínimo */
     }
     
-    .institution-logo {
-      position: absolute; /* Posicionamento flutuante */
-      top: 8px;
-      right: 8px;
-      width: 40px;  /* Tamanho do logo */
-      height: 40px; /* Tamanho do logo */
-      background-color: white;
-      border-radius: 50%; /* Deixa o fundo do logo redondo */
-      padding: 2px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      object-fit: contain;
-    }
+      /* Estilo para a logo da instituição */
+      .institution-logo {
+        /* Não precisa de absolute, vamos usar o fluxo do flexbox */
+        width: 50px; /* Tamanho maior para o logo */
+        height: 50px; /* Tamanho maior para o logo */
+        object-fit: contain; /* Garante que a imagem se ajuste sem cortar */
+        margin-left: auto; /* Empurra o logo para a direita */
+        background-color: transparent; /* Fundo transparente, já que a imagem já tem */
+        border-radius: 0; /* Remove bordas arredondadas */
+        box-shadow: none; /* Remove sombra */
+        /* Remove top e right já que o flexbox fará o posicionamento */
+      }
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
       
       /* Esconde as ações do card por padrão */
@@ -579,20 +584,20 @@
     }
 
     function getLogoParaInstituicao(nomeInstituicao) {
-        // PRIMEIRO, VERIFICA SE EXISTE UM NOME. Se não, retorna vazio e evita o erro.
         if (!nomeInstituicao) {
             return '';
         }
     
         const nome = nomeInstituicao.toUpperCase();
+        // Agora usando seus arquivos locais na pasta /img
         if (nome === 'UFES') {
-            return 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Ufes_bras%C3%A3o.png';
+            return './img/logo_ufes_pequena.png';
         }
         if (nome === 'IFES') {
-            return 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Ifes_vertical_logo.svg';
+            return './img/logo_ifes_pequena.png';
         }
         if (nome === 'FAMES') {
-            return 'https://www.fames.es.gov.br/Media/fames/Imagens/logo_fames_vertical.png';
+            return './img/logo_fames_pequena.png';
         }
         return ''; // Retorna vazio para qualquer outra instituição
     }
