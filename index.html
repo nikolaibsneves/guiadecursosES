@@ -87,10 +87,10 @@
       margin: 0;
     }
     
-    /* Ícone do curso */
     .card-icon {
-      font-size: 64px; /* Tamanho do ícone */
-      color: #003366; /* Cor do ícone (azul escuro) */
+      font-size: 64px;
+      color: #003366;
+      /* O ícone não precisa de mais nada, o flex cuida dele */
     }
     
     .modal {
@@ -156,25 +156,26 @@
     
     /* Ajustes para o Wrapper do Ícone e Logo */
     .card-icon-wrapper {
-      display: flex;
-      justify-content: space-between; /* Ícone na esquerda, logo na direita */
-      align-items: center;          /* Alinha verticalmente */
-      padding: 1rem;                /* Espaçamento interno */
-      min-height: 80px;             /* Altura mínima para consistência */
-    }
-    
+      display: flex;            /* Usa flexbox para alinhar os itens */
+      justify-content: space-between; /* Coloca um item em cada ponta */
+      align-items: center;      /* Alinha verticalmente ao centro */
+      padding: 1rem;            /* Espaçamento interno para respiro */
+      min-height: 80px;         /* Altura mínima para consistência visual */
+    }    
       /* Estilo para a logo da instituição */
     .institution-logo {
-      /* Define a largura MÁXIMA da logo como 40% da largura do card */
-      max-width: 40%; 
-            /* Define a altura MÁXIMA da logo como 60px (ajuste se necessário) */
-      max-height: 60px;
-            /* Deixa a altura e largura se ajustarem automaticamente para manter a proporção */
-      width: auto;
-      height: auto;
-      /* Garante que a imagem caiba perfeitamente sem distorcer ou cortar */
-      object-fit: contain; 
+      /* Define um tamanho máximo para a logo, para ela não explodir */
+      max-width: 100px; /* Largura máxima em pixels */
+      max-height: 60px; /* Altura máxima em pixels */
+    
+      /* Propriedade mágica para garantir que a imagem caiba sem distorcer */
+      object-fit: contain;
+    
+      /* Remove qualquer estilo indesejado */
+      background-color: transparent;
+      box-shadow: none;
     }
+
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
       
       /* Esconde as ações do card por padrão */
