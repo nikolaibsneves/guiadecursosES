@@ -151,29 +151,28 @@
     /* Ajustes para o Wrapper do Ícone e Logo */
     .card-icon-wrapper {
       display: flex;
-      justify-content: space-between; /* Ícone na esquerda, logo na direita */
-      align-items: center;          /* Alinha verticalmente */
+      justify-content: space-between;
+      align-items: center;
       padding: 1rem;
-      gap: 1rem;                      /* Espaço seguro entre os dois */
+      gap: 1rem;
       min-height: 80px;
     }
     
     .card-icon {
       font-size: 64px;
       color: #003366;
-      line-height: 1; /* Garante que o ícone não adicione altura extra */
+      flex-shrink: 0; /* O ÍCONE não deve encolher */
     }
     
     .institution-logo {
-      /* Tamanho Fixo: A logo terá sempre 50x50 pixels */
-      width: 50px;
-      height: 50px;
-    
-      /* Garante que a imagem se ajuste bem, caso a proporção não seja 1:1 exata */
+      /* A LOGO PODE encolher, mas até um certo ponto */
+      flex-shrink: 1; 
+      /* Define a LARGURA MÁXIMA que a logo pode ter */
+      max-width: 60px;
+      /* Garante que a imagem se ajuste perfeitamente, sem cortar */
       object-fit: contain; 
-      
-      /* Impede a imagem de ser esmagada ou crescer */
-      flex-shrink: 0;
+      /* Garante que a imagem não "estoure" seu container */
+      display: block;
     }
 
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
