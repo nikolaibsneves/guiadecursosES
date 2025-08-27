@@ -232,6 +232,18 @@
       #toggle-edit-mode.active {
         background-color: #0056b3;
       }
+
+      #reset-filtros-btn {
+        background-color: #6c757d; /* Cinza, como o botão de Edição */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 8px; /* Um pouco menor para ser mais discreto */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
       /* Container para os botões de Favoritos, Lixeira, etc. */
       .edit-actions-container {
         display: none; /* Escondido por padrão */
@@ -373,7 +385,9 @@
         <select id="duracao" aria-label="Duração">
           <option value="">Todas as durações</option>
         </select>
-    
+        <button id="reset-filtros-btn" title="Limpar filtros">
+          <span class="material-symbols-outlined">restart_alt</span>
+        </button>
         <button id="toggle-edit-mode">
           <span class="material-symbols-outlined">tune</span>
           Elimine e Favorite
@@ -782,6 +796,7 @@
                 document.getElementById('tipo').addEventListener('change', filtrarCursos);
                 document.getElementById('campus').addEventListener('change', filtrarCursos);
                 document.getElementById('duracao').addEventListener('change', filtrarCursos);
+                document.getElementById('reset-filtros-btn').addEventListener('click', resetarFiltros);
 
                 // Adiciona os 'escutadores' de eventos para o MODO DE EDIÇÃO
                 const toggleButton = document.getElementById('toggle-edit-mode');
@@ -835,6 +850,17 @@
         });
     });
 
+    function resetarFiltros() {
+      document.getElementById('busca').value = '';
+      document.getElementById('instituicao').value = '';
+      document.getElementById('tipo').value = '';
+      document.getElementById('campus').value = '';
+      document.getElementById('duracao').value = '';
+    
+      // Após limpar os campos, chama a função de filtrar para atualizar a tela
+      filtrarCursos();
+    }
+  
     // Função principal que lê as opções, prepara os dados e gera o PDF
     function gerarPDF() {
       const { jsPDF } = window.jspdf;
