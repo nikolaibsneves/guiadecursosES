@@ -584,9 +584,14 @@
         selectElement.appendChild(opt);
       });
     }
+
+    function normalizarTexto(texto) {
+      if (!texto) return '';
+      return texto.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
   
     function filtrarCursos() {
-        const texto = document.getElementById('busca').value.toLowerCase();
+        const texto = normalizarTexto(document.getElementById('busca').value);
         const inst = document.getElementById('instituicao').value;
         const tipo = document.getElementById('tipo').value;
         const campus = document.getElementById('campus').value;
@@ -596,13 +601,13 @@
                 return false;
             }
             const instituicaoCurso = curso.Instituição || "UFES";
-            return (
-                curso.Curso.toLowerCase().includes(texto) &&
-                (inst === "" || instituicaoCurso === inst) &&
-                (tipo === "" || curso.Tipo === tipo) &&
-                (campus === "" || curso.Campus === campus) &&
-                (duracao === "" || curso.Semestres.toString() === duracao)
-            );
+         return (
+              normalizarTexto(curso.Curso).includes(texto) &&
+              (inst === "" || instituicaoCurso === inst) &&
+              (tipo === "" || curso.Tipo === tipo) &&
+              (campus === "" || curso.Campus === campus) &&
+              (duracao === "" || curso.Semestres.toString() === duracao)
+          );
         });
         offset = 0;
         document.getElementById('cards').innerHTML = "";
