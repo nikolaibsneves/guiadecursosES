@@ -171,15 +171,24 @@
     
       /* Estilo para a logo da instituição */
     .institution-logo {
-      max-width: 50%; /* Ocupa no máximo 50% da largura do pai (.card-icon-wrapper) */
-      height: auto; /* Mantém a proporção da imagem automaticamente */
-      max-height: 60px; /* Limita a altura máxima para não esticar verticalmente demais */
-      object-fit: contain; /* Garante que a imagem se ajuste sem cortar ou distorcer */
-      margin-left: auto; /* Empurra o logo para a direita */
-      background-color: transparent; /* Remove qualquer fundo branco que possa ter sido adicionado */
-      border-radius: 0; /* Remove bordas arredondadas, se houver */
-      box-shadow: none; /* Remove sombra, se houver */
-      display: block; /* Garante que se comporte como um bloco para o layout */
+      /* Define o tamanho máximo que a logo pode ocupar */
+      max-width: 60px;  /* Largura máxima permitida */
+      max-height: 50px; /* Altura máxima permitida */
+      
+      /* Garante que a imagem se ajuste sem distorcer ou cortar */
+      object-fit: contain; 
+      
+      /* Ocupa a largura e altura do seu conteúdo, evitando espaços vazios */
+      width: auto;
+      height: auto;
+      
+      /* Alinhamento dentro do container flex */
+      margin-left: auto; /* Empurra para a direita */
+      
+      /* Limpeza de estilos anteriores */
+      background-color: transparent;
+      border-radius: 0;
+      box-shadow: none;
     }
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
       
