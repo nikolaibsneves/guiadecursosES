@@ -165,14 +165,19 @@
     }
     
     .institution-logo {
-      /* A LOGO PODE encolher, mas até um certo ponto */
-      flex-shrink: 1; 
-      /* Define a LARGURA MÁXIMA que a logo pode ter */
-      max-width: 60px;
-      /* Garante que a imagem se ajuste perfeitamente, sem cortar */
+      /* 1. Define um LIMITE MÁXIMO, não um tamanho fixo */
+      max-width: 50px;
+      max-height: 50px;
+    
+      /* 2. Garante que a imagem ocupe o espaço disponível sem distorcer */
+      width: 100%;
+      height: auto;
+      
+      /* 3. Garante que a imagem caiba INTEIRA dentro do espaço, sem cortar */
       object-fit: contain; 
-      /* Garante que a imagem não "estoure" seu container */
-      display: block;
+      
+      /* 4. Impede a imagem de ser "esmagada" pelo ícone ao lado */
+      flex-shrink: 0;
     }
 
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
