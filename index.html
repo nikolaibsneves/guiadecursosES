@@ -90,7 +90,9 @@
     .card-icon {
       font-size: 64px;
       color: #003366;
-      /* O ícone não precisa de mais nada, o flex cuida dele */
+      flex-shrink: 0; /* Impede o ícone de ser esmagado */
+      flex-basis: 70px; /* Define uma largura base para o ícone */
+      text-align: center; /* Garante que o ícone fique centralizado em seu espaço */
     }
     
     .modal {
@@ -164,9 +166,12 @@
     }    
       /* Estilo para a logo da instituição */
     .institution-logo {
-      /* Define um tamanho máximo para a logo, para ela não explodir */
-      max-width: 100px; /* Largura máxima em pixels */
-      max-height: 60px; /* Altura máxima em pixels */
+      /* Ocupa o espaço restante, mas respeitando os limites */
+      flex-grow: 1;
+      
+      /* Garante que a imagem não ultrapasse seu container */
+      max-width: 100%; 
+      max-height: 60px;
     
       /* Propriedade mágica para garantir que a imagem caiba sem distorcer */
       object-fit: contain;
