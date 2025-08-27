@@ -154,29 +154,25 @@
       justify-content: space-between;
       align-items: center;
       padding: 1rem;
-      min-height: 80px;
-      gap: 1rem; /* Adiciona um espaço seguro entre os dois */
+      gap: 1rem;
     }
     
     .card-icon {
       font-size: 64px;
       color: #003366;
-      flex: 0 0 64px; /* Não cresce, não encolhe, base de 64px */
-      text-align: center;
+      line-height: 1; /* Garante que o ícone não tenha altura extra */
     }
     
     .institution-logo {
-      /* O container da logo pode ocupar o espaço restante */
-      flex: 1 1 auto;
+      /* Define um tamanho fixo e igual para largura e altura */
+      width: 50px;
+      height: 50px;
       
-      /* Garante que a imagem se comporte bem dentro do seu container */
-      display: block;
-      max-width: 100%;  /* Ocupa no máximo 100% do espaço que recebeu */
-      max-height: 60px; /* Limite vertical para logos altas */
-      width: auto;
-      height: auto;
-      object-fit: contain; /* A propriedade mágica que impede o corte */
-      margin-left: auto;  /* Alinha a imagem à direita do seu container */
+      /* Garante que a imagem se ajuste bem dentro do quadrado */
+      object-fit: contain; 
+      
+      /* Impede a imagem de ser esmagada se o espaço for pequeno */
+      flex-shrink: 0;
     }
 
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
