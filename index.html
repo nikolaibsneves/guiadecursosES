@@ -163,17 +163,17 @@
       line-height: 1; /* Garante que o ícone não tenha altura extra */
     }
     
-    .institution-logo {
-      /* Define um tamanho fixo e igual para largura e altura */
-      width: 50px;
-      height: 50px;
-      
-      /* Garante que a imagem se ajuste bem dentro do quadrado */
-      object-fit: contain; 
-      
-      /* Impede a imagem de ser esmagada se o espaço for pequeno */
-      flex-shrink: 0;
-    }
+      .institution-logo {
+        /* 1. Define uma "caixa" com tamanho MÁXIMO para a logo */
+        width: 90px;
+        height: 50px;
+        /* 2. Garante que a imagem caiba INTEIRA dentro dessa caixa, sem distorcer */
+        object-fit: contain; 
+        /* 3. Alinha a caixa da logo à direita do container */
+        margin-left: auto; 
+        /* 4. Impede que a logo seja "esmagada" se o espaço for pequeno */
+        flex-shrink: 0;
+      }
 
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
       
