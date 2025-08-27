@@ -90,9 +90,9 @@
     .card-icon {
       font-size: 64px;
       color: #003366;
-      flex-shrink: 0; /* Impede o ícone de ser esmagado */
-      flex-basis: 70px; /* Define uma largura base para o ícone */
-      text-align: center; /* Garante que o ícone fique centralizado em seu espaço */
+      /* Damos ao ícone uma largura fixa para não interferir com a logo */
+      width: 70px; 
+      flex-shrink: 0; /* Impede que ele seja esmagado */
     }
     
     .modal {
@@ -158,27 +158,24 @@
     
     /* Ajustes para o Wrapper do Ícone e Logo */
     .card-icon-wrapper {
-      display: flex;            /* Usa flexbox para alinhar os itens */
-      justify-content: space-between; /* Coloca um item em cada ponta */
-      align-items: center;      /* Alinha verticalmente ao centro */
-      padding: 1rem;            /* Espaçamento interno para respiro */
-      min-height: 80px;         /* Altura mínima para consistência visual */
-    }    
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      min-height: 80px; /* Mantém a altura mínima para consistência */
+    }  
       /* Estilo para a logo da instituição */
     .institution-logo {
-      /* Ocupa o espaço restante, mas respeitando os limites */
-      flex-grow: 1;
+      /* A logo pode ocupar o espaço restante, até um máximo de 120px */
+      max-width: 120px; 
+      max-height: 60px; /* Limite vertical */
       
-      /* Garante que a imagem não ultrapasse seu container */
-      max-width: 100%; 
-      max-height: 60px;
-    
-      /* Propriedade mágica para garantir que a imagem caiba sem distorcer */
-      object-fit: contain;
-    
-      /* Remove qualquer estilo indesejado */
-      background-color: transparent;
-      box-shadow: none;
+      /* Garante que a imagem se ajuste perfeitamente, sem cortar */
+      object-fit: contain; 
+      
+      /* Garante que a imagem não "estoure" seu container */
+      display: block;
+      margin-left: auto; /* Alinha à direita */
     }
 
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
