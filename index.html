@@ -87,14 +87,6 @@
       margin: 0;
     }
     
-    .card-icon {
-      font-size: 64px;
-      color: #003366;
-      /* Damos ao ícone uma largura fixa para não interferir com a logo */
-      width: 70px; 
-      flex-shrink: 0; /* Impede que ele seja esmagado */
-    }
-    
     .modal {
       display: none;
       position: fixed;
@@ -162,20 +154,29 @@
       justify-content: space-between;
       align-items: center;
       padding: 1rem;
-      min-height: 80px; /* Mantém a altura mínima para consistência */
-    }  
-      /* Estilo para a logo da instituição */
+      min-height: 80px;
+      gap: 1rem; /* Adiciona um espaço seguro entre os dois */
+    }
+    
+    .card-icon {
+      font-size: 64px;
+      color: #003366;
+      flex: 0 0 64px; /* Não cresce, não encolhe, base de 64px */
+      text-align: center;
+    }
+    
     .institution-logo {
-      /* A logo pode ocupar o espaço restante, até um máximo de 120px */
-      max-width: 120px; 
-      max-height: 60px; /* Limite vertical */
+      /* O container da logo pode ocupar o espaço restante */
+      flex: 1 1 auto;
       
-      /* Garante que a imagem se ajuste perfeitamente, sem cortar */
-      object-fit: contain; 
-      
-      /* Garante que a imagem não "estoure" seu container */
+      /* Garante que a imagem se comporte bem dentro do seu container */
       display: block;
-      margin-left: auto; /* Alinha à direita */
+      max-width: 100%;  /* Ocupa no máximo 100% do espaço que recebeu */
+      max-height: 60px; /* Limite vertical para logos altas */
+      width: auto;
+      height: auto;
+      object-fit: contain; /* A propriedade mágica que impede o corte */
+      margin-left: auto;  /* Alinha a imagem à direita do seu container */
     }
 
       /* --- ESTILOS PARA O MODO ELIMINE E FAVORITE --- */
