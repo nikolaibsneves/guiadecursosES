@@ -886,6 +886,18 @@
                 renderizarMaisCursos();
             }
         });
+        window.addEventListener('keydown', (event) => {
+            // Verifica se a tecla pressionada foi 'Escape'
+            if (event.key === 'Escape') {
+              // Procura por qualquer modal que esteja visível na tela
+              const modalAberto = document.querySelector('.modal[style*="display: block"]');
+              
+              // Se encontrou um modal aberto, chama a função para fechá-lo
+              if (modalAberto) {
+                fecharModal(modalAberto.id);
+              }
+            }
+          });
     });
 
     function resetarFiltros() {
