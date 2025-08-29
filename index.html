@@ -564,18 +564,27 @@
           }, 300);
     }
     function sortearCursoSurpresa() {
-      // 1. Verifica se há cursos na lista filtrada atual
       if (cursosFiltrados.length === 0) {
         alert('Nenhum curso corresponde aos filtros selecionados para o sorteio. Tente limpar os filtros!');
-        return; // Para a execução se não houver cursos
+        return;
       }
     
-      // 2. Sorteia um índice aleatório da lista de cursos filtrados
       const indiceAleatorio = Math.floor(Math.random() * cursosFiltrados.length);
       const cursoSorteado = cursosFiltrados[indiceAleatorio];
+      const modalId = `modal-${cursoSorteado.id}`;
     
-      // 3. Abre o modal do curso sorteado
-      abrirModal(`modal-${cursoSorteado.id}`);
+      // 1. VERIFICA SE O MODAL JÁ EXISTE NA PÁGINA
+      let modal = document.getElementById(modalId);
+    
+      // 2. SE NÃO EXISTIR, CRIA NA HORA!
+      if (!modal) {
+        console.log(`Modal para "${cursoSorteado.Curso}" não encontrado. Criando sob demanda...`);
+        const modalHTML = criarModal(cursoSorteado); // Usa a função que já temos
+        document.getElementById('modals').insertAdjacentHTML('beforeend', modalHTML);
+      }
+    
+      // 3. AGORA, COM CERTEZA O MODAL EXISTE. PODE ABRIR!
+      abrirModal(modalId);
     }
     function transformarLinks(texto) {
       if (!texto) return '';
