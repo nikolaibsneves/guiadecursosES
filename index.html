@@ -233,7 +233,8 @@
         background-color: #0056b3;
       }
 
-      #reset-filtros-btn {
+      #reset-filtros-btn,
+      #curso-surpresa-btn {
         background-color: #6c757d; /* Cinza, como o botão de Edição */
         color: white;
         border: none;
@@ -387,6 +388,9 @@
         </select>
         <button id="reset-filtros-btn" title="Limpar filtros">
           <span class="material-symbols-outlined">restart_alt</span>
+        </button>
+        <button id="curso-surpresa-btn" title="Curso surpresa! (filtros se aplicam)">
+          <span class="material-symbols-outlined">casino</span>
         </button>
         <button id="toggle-edit-mode">
           <span class="material-symbols-outlined">tune</span>
@@ -559,7 +563,20 @@
             verificarECarregarMaisSeNecessario();
           }, 300);
     }
-
+    function sortearCursoSurpresa() {
+      // 1. Verifica se há cursos na lista filtrada atual
+      if (cursosFiltrados.length === 0) {
+        alert('Nenhum curso corresponde aos filtros selecionados para o sorteio. Tente limpar os filtros!');
+        return; // Para a execução se não houver cursos
+      }
+    
+      // 2. Sorteia um índice aleatório da lista de cursos filtrados
+      const indiceAleatorio = Math.floor(Math.random() * cursosFiltrados.length);
+      const cursoSorteado = cursosFiltrados[indiceAleatorio];
+    
+      // 3. Abre o modal do curso sorteado
+      abrirModal(`modal-${cursoSorteado.id}`);
+    }
     function transformarLinks(texto) {
       if (!texto) return '';
     
@@ -807,6 +824,8 @@
                 document.getElementById('campus').addEventListener('change', filtrarCursos);
                 document.getElementById('duracao').addEventListener('change', filtrarCursos);
                 document.getElementById('reset-filtros-btn').addEventListener('click', resetarFiltros);
+                // Adiciona o 'escutador' para o botão de curso surpresa
+                document.getElementById('curso-surpresa-btn').addEventListener('click', sortearCursoSurpresa);
 
                 // Adiciona os 'escutadores' de eventos para o MODO DE EDIÇÃO
                 const toggleButton = document.getElementById('toggle-edit-mode');
