@@ -887,17 +887,20 @@
             }
         });
         window.addEventListener('keydown', (event) => {
-            // Verifica se a tecla pressionada foi 'Escape'
-            if (event.key === 'Escape') {
-              // Procura por qualquer modal que esteja visível na tela
-              const modalAberto = document.querySelector('.modal[style*="display: block"]');
+          if (event.key === 'Escape') {
+            // 1. Procura por qualquer modal que esteja visível
+            const modalAberto = document.querySelector('.modal[style*="display: block"]');
+            
+            // 2. Se encontrou um, fecha-o diretamente
+            if (modalAberto) {
+              // Impede que o 'Esc' execute outras ações padrão do navegador (como desfocar o botão)
+              event.preventDefault(); 
               
-              // Se encontrou um modal aberto, chama a função para fechá-lo
-              if (modalAberto) {
-                fecharModal(modalAberto.id);
-              }
+              // Chama a função de fechar, que já sabe como lidar com qualquer modal
+              fecharModal(modalAberto.id);
             }
-          });
+          }
+        });
     });
 
     function resetarFiltros() {
