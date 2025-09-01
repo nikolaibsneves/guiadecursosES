@@ -363,6 +363,31 @@
       .print-actions .cancel-btn {
         background-color: #ccc;
       }
+
+      /* Container para os botões de ação DENTRO do modal */
+      .modal-actions {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: space-around;
+        gap: 1rem;
+      }
+      .modal-actions button {
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.2s ease;
+      }
+      .modal-actions button:hover {
+        background-color: #e0e0e0;
+      }
     
   </style>
 </head>
@@ -405,6 +430,7 @@
         <div id="edit-actions" class="edit-actions-container">
           <button id="show-favorites">⭐ Favoritos</button>
           <button id="show-eliminated">🗑️ Lixeira</button>
+          <button id="show-sorteados-btn" style="display: none;">🎲 Sorteados</button> 
           <button id="clear-lists" class="danger">Limpar Tudo</button>
         </div>
     </section>
@@ -463,7 +489,7 @@
         
         return `
         <article class="card" id="card-${curso.id}">
-          <div class="card-clickable-area" onclick="abrirModal('modal-${curso.id}')">
+        <div class="card-clickable-area" onclick="abrirModalDeCurso(${curso.id})">
             
             <div class="card-icon-wrapper">
               <span class="material-symbols-outlined card-icon">${nomeIcone}</span>
@@ -487,26 +513,68 @@
         </article>`;
     }
 
-    function criarModal(curso) {
-        // Passa o texto de "Forma de acesso" pela nossa nova função
-        const formaDeAcessoComLink = transformarLinks(curso["Forma de acesso"]);
-    
-        return `
-        <div id="modal-${curso.id}" class="modal">
-          <div class="modal-content">
-            <span class="close" onclick="fecharModal('modal-${curso.id}')">&times;</span>
-            ${curso.VideoID ? `<iframe data-src="https://www.youtube.com/embed/${curso.VideoID}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>` : ''}
-            <h2>${curso.Curso}</h2>
-            <p><strong>Tipo:</strong> ${curso.Tipo}</p>
-            <p><strong>Instituição:</strong> ${curso.Instituição || "UFES"}</p>
-            <p><strong>Campus:</strong> ${curso.Campus}</p>
-            <p><strong>Horário:</strong> ${curso.Horário}</p>
-            <p><strong>Acesso:</strong> ${formaDeAcessoComLink}</p>
-            <a href="${curso["Página do curso"]}" target="_blank">Visitar a página do curso</a>
-          </div>
-        </div>`;
-    }
+    function criarModal(curso, contexto = 'normal') {
+        let actionsHTML = '';
+        // Lógica para decidir quais botões mostrar
+        if (contexto === 'edicao') {
+            const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
+            const iconeEstrela = curso.isFavorito ? 'star' : 'star_border';
+            actionsHTML = `
+            <div class="modal-actions">
+                <button class="${classeFavorito}" onclick="toggleFavorito(${curso.id})"><span class="material-symbols-outlined">${iconeEstrela}</span> Favoritar</button>
+                <button onclick="toggleEliminado(${curso.id}); fecharModal('modal-${curso.id}')">🚫 Eliminar</button>
+            </div>`;
+        } else if (contexto === 'sorteio') {
+            const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
+            const iconeEstrela = curso.isFavorito ? 'star' : 'star_border';
+            actionsHTML = `
+            <div class="modal-actions">
+                <button class="${classeFavorito}" onclick="acaoFavoritarSorteado(${curso.id})"><span class="material-symbols-outlined">${iconeEstrela}</span> Favoritar</button>
+                <button onclick="sortearCursoSurpresa(true)">🎲 Sortear Novo</button>
+                <button onclick="acaoEliminarSorteado(${curso.id})">🚫 Eliminar e Sortear</button>
+            </div>`;
+        }
 
+    const formaDeAcessoComLink = transformarLinks(curso["Forma de acesso"]);
+    return `
+    <div id="modal-${curso.id}" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="fecharModal('modal-${curso.id}')">&times;</span>
+        ${curso.VideoID ? `<iframe data-src="https://www.youtube.com/embed/${curso.VideoID}" title="YouTube video player" allowfullscreen></iframe>` : ''}
+        <h2>${curso.Curso}</h2>
+        <p><strong>Tipo:</strong> ${curso.Tipo}</p>
+        <p><strong>Instituição:</strong> ${curso.Instituição || "UFES"}</p>
+        <p><strong>Campus:</strong> ${curso.Campus}</p>
+        <p><strong>Horário:</strong> ${curso.Horário}</p>
+        <p><strong>Acesso:</strong> ${formaDeAcessoComLink}</p>
+        <a href="${curso["Página do curso"]}" target="_blank">Visitar a página do curso</a>
+        ${actionsHTML} 
+      </div>
+    </div>`;
+}
+
+    function abrirModalDeCurso(cursoId) {
+        const contexto = modoEdicaoAtivo ? 'edicao' : 'normal';
+        const curso = cursos.find(c => c.id === cursoId);
+        if (!curso) return;
+    
+        const modalId = `modal-${curso.id}`;
+        let modal = document.getElementById(modalId);
+    
+        if (!modal) {
+            // Cria o modal com o contexto correto
+            const modalHTML = criarModal(curso, contexto);
+            document.getElementById('modals').insertAdjacentHTML('beforeend', modalHTML);
+        } else {
+            // Se o modal já existe, mas o contexto pode ter mudado, o melhor é recriá-lo
+            modal.remove();
+            const modalHTML = criarModal(curso, contexto);
+            document.getElementById('modals').insertAdjacentHTML('beforeend', modalHTML);
+        }
+        
+        abrirModal(modalId); // Chama a função que apenas exibe o modal
+    }
+    
     function abrirModal(modalId) {
         const modal = document.getElementById(modalId);
         if (!modal) return;
@@ -538,7 +606,16 @@
     }
 
     // --- FUNÇÕES DE LÓGICA E DADOS ---
-
+    function salvarListas() {
+        const favoritosIds = cursos.filter(c => c.isFavorito).map(c => c.id);
+        const eliminadosIds = cursos.filter(c => c.isEliminado).map(c => c.id);
+        const sorteadosIds = cursos.filter(c => c.isSorteado).map(c => c.id);
+    
+        localStorage.setItem('cursosFavoritos', JSON.stringify(favoritosIds));
+        localStorage.setItem('cursosEliminados', JSON.stringify(eliminadosIds));
+        localStorage.setItem('cursosSorteados', JSON.stringify(sorteadosIds));
+    }
+  
     function renderizarMaisCursos() {
         if (carregando || offset >= cursosFiltrados.length) {
             return;
@@ -816,8 +893,27 @@
         fetch('dados_cursos_ufes_atualizado.json')
             .then(response => response.json())
             .then(data => {
+                // Carrega os IDs salvos do localStorage
+                const favoritosSalvos = JSON.parse(localStorage.getItem('cursosFavoritos')) || [];
+                const eliminadosSalvos = JSON.parse(localStorage.getItem('cursosEliminados')) || [];
+                const sorteadosSalvos = JSON.parse(localStorage.getItem('cursosSorteados')) || [];
+            
                 data.sort((a, b) => a.Curso.localeCompare(b.Curso));
-                cursos = data.map((curso, index) => ({...curso, id: index, isFavorito: false, isEliminado: false}));
+                
+                // Adiciona os estados salvos aos cursos
+                cursos = data.map((curso, index) => ({
+                    ...curso,
+                    id: index,
+                    isFavorito: favoritosSalvos.includes(index),
+                    isEliminado: eliminadosSalvos.includes(index),
+                    isSorteado: sorteadosSalvos.includes(index) // <-- NOVA PROPRIEDADE
+                }));
+            
+                // Se já houver cursos sorteados da última visita, mostra o botão da lista
+                if (sorteadosSalvos.length > 0) {
+                    document.getElementById('show-sorteados-btn').style.display = 'flex';
+                }
+    
                 cursosFiltrados = [...cursos];
                 
                 // Popula os filtros dinamicamente com base nos dados carregados
