@@ -8,6 +8,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   
   <style>
     body {
@@ -388,7 +389,11 @@
       .modal-actions button:hover {
         background-color: #e0e0e0;
       }
-    
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+      }
   </style>
 </head>
 <body>
@@ -640,28 +645,60 @@
             verificarECarregarMaisSeNecessario();
           }, 300);
     }
-    function sortearCursoSurpresa() {
-      if (cursosFiltrados.length === 0) {
-        alert('Nenhum curso corresponde aos filtros selecionados para o sorteio. Tente limpar os filtros!');
-        return;
-      }
+    function sortearCursoSurpresa(isResorteio = false) {
+        if (cursosFiltrados.length === 0) {
+            alert('Nenhum curso corresponde aos filtros selecionados para o sorteio.');
+            return;
+        }
     
-      const indiceAleatorio = Math.floor(Math.random() * cursosFiltrados.length);
-      const cursoSorteado = cursosFiltrados[indiceAleatorio];
-      const modalId = `modal-${cursoSorteado.id}`;
+        // Se for um novo sorteio (não um re-sorteio), fecha qualquer modal de curso aberto
+        if (!isResorteio) {
+            const modalCursoAberto = document.querySelector('.modal[id^="modal-"]');
+            if (modalCursoAberto) {
+                fecharModal(modalCursoAberto.id);
+            }
+        }
     
-      // 1. VERIFICA SE O MODAL JÁ EXISTE NA PÁGINA
-      let modal = document.getElementById(modalId);
+        const indiceAleatorio = Math.floor(Math.random() * cursosFiltrados.length);
+        const cursoSorteado = cursosFiltrados[indiceAleatorio];
+        const modalId = `modal-${cursoSorteado.id}`;
     
-      // 2. SE NÃO EXISTIR, CRIA NA HORA!
-      if (!modal) {
-        console.log(`Modal para "${cursoSorteado.Curso}" não encontrado. Criando sob demanda...`);
-        const modalHTML = criarModal(cursoSorteado); // Usa a função que já temos
-        document.getElementById('modals').insertAdjacentHTML('beforeend', modalHTML);
-      }
+        // Marca como sorteado e salva
+        cursoSorteado.isSorteado = true;
+        salvarListas();
+        document.getElementById('show-sorteados-btn').style.display = 'flex'; // Garante que o botão da lista apareça
     
-      // 3. AGORA, COM CERTEZA O MODAL EXISTE. PODE ABRIR!
-      abrirModal(modalId);
+        // --- LÓGICA DA ANIMAÇÃO ---
+        // 1. Cria e mostra o modal de suspense
+        const suspenseModalHTML = `
+        <div id="suspense-modal" class="modal" style="display: block; background-color: rgba(0,0,0,0.9);">
+            <div class="modal-content" style="background: none; text-align: center; box-shadow: none;">
+                <span style="font-size: 150px; color: #666; animation: pulse 1.5s infinite;">?</span>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', suspenseModalHTML);
+    
+        // 2. Espera 800ms para criar o suspense
+        setTimeout(() => {
+            // Remove o modal de suspense
+            document.getElementById('suspense-modal').remove();
+    
+            // Cria o modal do curso no contexto de sorteio
+            let modal = document.getElementById(modalId);
+            if (modal) modal.remove(); // Remove o antigo para garantir que os botões estão certos
+            const modalHTML = criarModal(cursoSorteado, 'sorteio');
+            document.getElementById('modals').insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Abre o modal do curso
+            abrirModal(modalId);
+            
+            // 3. Solta os confetes!
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }, 800); // 800ms de suspense
     }
     function transformarLinks(texto) {
       if (!texto) return '';
@@ -846,30 +883,44 @@
         }
     }
 
-    function abrirModalDeLista(titulo, listaDeCursos, isLixeira = false) {
+    function abrirModalDeLista(titulo, listaDeCursos, isLixeira = false, isSorteados = false) {
         const modalAntigo = document.getElementById('lista-modal');
         if (modalAntigo) modalAntigo.remove();
+    
         let cardsHTML = '';
         if (listaDeCursos.length === 0) {
             cardsHTML = '<p>Nenhum curso aqui. A lista está vazia.</p>';
         } else {
             listaDeCursos.forEach(curso => {
                 const nomeIcone = getIconeParaCurso(curso.Curso);
-                const acaoBotao = isLixeira ?
-                    `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️ Restaurar</button>` :
-                    `<button title="Remover dos favoritos" onclick="removerFavoritoDaLista(${curso.id})">⭐</button>`;
+                let acaoBotao = '';
+                if (isLixeira) {
+                    acaoBotao = `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️</button>`;
+                } else { // Para Favoritos e Sorteados
+                    const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
+                    acaoBotao = `
+                        <button title="Favoritar curso" class="${classeFavorito}" onclick="toggleFavoritoDaLista(${curso.id}, ${isSorteados})">⭐</button>
+                        <button title="Eliminar curso" onclick="toggleEliminadoDaLista(${curso.id})">🚫</button>
+                    `;
+                }
                 cardsHTML += `
-            <article class="card-lista" id="lista-card-${curso.id}">
-              <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
-              <div class="card-content-lista"><h2>${curso.Curso}</h2><p>${curso.Campus}</p></div>
-              <div class="card-actions-lista">${acaoBotao}</div>
-            </article>`;
+                <article class="card-lista" id="lista-card-${curso.id}">
+                  <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
+                  <div class="card-content-lista"><h2>${curso.Curso}</h2><p>${curso.Campus}</p></div>
+                  <div class="card-actions-lista">${acaoBotao}</div>
+                </article>`;
             });
         }
+    
+        const botaoLimpar = isSorteados ? '<button onclick="limparListaSorteados()" class="danger" style="margin-top: 1rem; width: 100%;">Limpar Histórico de Sorteios</button>' : '';
+    
         const modalHTML = `
         <div id="lista-modal" class="modal" style="display:block;">
-          <div class="modal-content"><span class="close" onclick="fecharModal('lista-modal')">&times;</span>
-            <h2>${titulo}</h2><div class="container-lista">${cardsHTML}</div>
+          <div class="modal-content">
+            <span class="close" onclick="fecharModal('lista-modal')">&times;</span>
+            <h2>${titulo}</h2>
+            <div class="container-lista">${cardsHTML}</div>
+            ${botaoLimpar}
           </div>
         </div>`;
         document.body.insertAdjacentHTML('beforeend', modalHTML);
@@ -887,6 +938,36 @@
         if (cardNaLista) cardNaLista.remove();
     }
 
+    function acaoFavoritarSorteado(cursoId) {
+        // Ativa o modo de edição se não estiver ativo
+        if (!modoEdicaoAtivo) {
+            document.getElementById('toggle-edit-mode').click();
+        }
+        // Favorita o curso
+        toggleFavorito(cursoId);
+    
+        // Atualiza o visual do botão dentro do modal
+        const curso = cursos.find(c => c.id === cursoId);
+        const modalButton = document.querySelector(`#modal-${cursoId} .modal-actions button:first-child`);
+        if (modalButton) {
+            modalButton.classList.toggle('favorito-ativo', curso.isFavorito);
+            const starIcon = modalButton.querySelector('.material-symbols-outlined');
+            starIcon.textContent = curso.isFavorito ? 'star' : 'star_border';
+        }
+    }
+    
+    function acaoEliminarSorteado(cursoId) {
+        // Ativa o modo de edição se não estiver ativo
+        if (!modoEdicaoAtivo) {
+            document.getElementById('toggle-edit-mode').click();
+        }
+        // Elimina o curso
+        toggleEliminado(cursoId);
+        
+        // Fecha o modal atual e sorteia o próximo
+        fecharModal(`modal-${cursoId}`);
+        sortearCursoSurpresa(true); // O 'true' indica que é um re-sorteio
+    }
 
     // --- INICIALIZAÇÃO DA PÁGINA ---
     document.addEventListener('DOMContentLoaded', () => {
@@ -931,7 +1012,8 @@
                 document.getElementById('reset-filtros-btn').addEventListener('click', resetarFiltros);
                 // Adiciona o 'escutador' para o botão de curso surpresa
                 document.getElementById('curso-surpresa-btn').addEventListener('click', sortearCursoSurpresa);
-
+                // Para o botão que exibe a lista de cursos já sorteados
+                document.getElementById('show-sorteados-btn').addEventListener('click', mostrarListaSorteados);
                 // Adiciona os 'escutadores' de eventos para o MODO DE EDIÇÃO
                 const toggleButton = document.getElementById('toggle-edit-mode');
                 toggleButton.addEventListener('click', () => {
@@ -1010,6 +1092,40 @@
       filtrarCursos();
     }
   
+    function mostrarListaSorteados() {
+        const sorteados = cursos.filter(c => c.isSorteado);
+        // O último 'true' indica que é a lista de sorteados, para mostrar os botões certos
+        abrirModalDeLista('Cursos Já Sorteados', sorteados, false, true); 
+    }
+    function limparListaSorteados() {
+        if (confirm('Tem certeza que deseja limpar a lista de cursos sorteados?')) {
+            cursos.forEach(c => c.isSorteado = false);
+            salvarListas(); // Salva o novo estado
+            fecharModal('lista-modal'); // Fecha o modal da lista
+            // Esconde o botão da lista de sorteados, já que ela está vazia
+            document.getElementById('show-sorteados-btn').style.display = 'none';
+        }
+    }
+    function toggleFavoritoDaLista(cursoId, isSorteados) {
+        toggleFavorito(cursoId);
+        // Se for a lista de favoritos, o item some ao ser desfavoritado
+        if (!isSorteados) {
+            const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
+            if (cardNaLista) cardNaLista.remove();
+        } else {
+            // Se for a lista de sorteados, apenas atualiza a cor da estrela
+            const curso = cursos.find(c => c.id === cursoId);
+            const buttonNaLista = document.querySelector(`#lista-card-${cursoId} .card-actions-lista button:first-child`);
+            if(buttonNaLista) buttonNaLista.classList.toggle('favorito-ativo', curso.isFavorito);
+        }
+    }
+    
+    function toggleEliminadoDaLista(cursoId) {
+        toggleEliminado(cursoId);
+        // Ao ser eliminado, o item sempre some de qualquer lista onde esteja
+        const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
+        if (cardNaLista) cardNaLista.remove();
+    }
     // Função principal que lê as opções, prepara os dados e gera o PDF
     function gerarPDF() {
       const { jsPDF } = window.jspdf;
