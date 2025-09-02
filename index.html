@@ -651,11 +651,11 @@
             return;
         }
     
-        // Se for um novo sorteio (não um re-sorteio), fecha qualquer modal de curso aberto
-        if (!isResorteio) {
-            const modalCursoAberto = document.querySelector('.modal[id^="modal-"]');
-            if (modalCursoAberto) {
-                fecharModal(modalCursoAberto.id);
+        // Se for um re-sorteio, fecha o modal anterior primeiro
+        if (isResorteio) {
+            const modalAberto = document.querySelector('.modal[id^="modal-"][style*="display: block"]');
+            if (modalAberto) {
+                fecharModal(modalAberto.id);
             }
         }
     
@@ -697,6 +697,7 @@
                 particleCount: 100,
                 spread: 70,
                 origin: { y: 0.6 }
+                zIndex: 9999
             });
         }, 800); // 800ms de suspense
     }
@@ -892,24 +893,30 @@
             cardsHTML = '<p>Nenhum curso aqui. A lista está vazia.</p>';
         } else {
             listaDeCursos.forEach(curso => {
-                const nomeIcone = getIconeParaCurso(curso.Curso);
-                let acaoBotao = '';
-                if (isLixeira) {
-                    acaoBotao = `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️</button>`;
-                } else { // Para Favoritos e Sorteados
-                    const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
-                    acaoBotao = `
-                        <button title="Favoritar curso" class="${classeFavorito}" onclick="toggleFavoritoDaLista(${curso.id}, ${isSorteados})">⭐</button>
-                        <button title="Eliminar curso" onclick="toggleEliminadoDaLista(${curso.id})">🚫</button>
-                    `;
-                }
-                cardsHTML += `
-                <article class="card-lista" id="lista-card-${curso.id}">
-                  <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
-                  <div class="card-content-lista"><h2>${curso.Curso}</h2><p>${curso.Campus}</p></div>
-                  <div class="card-actions-lista">${acaoBotao}</div>
-                </article>`;
-            });
+          const nomeIcone = getIconeParaCurso(curso.Curso);
+              let acaoBotao = '';
+      
+              if (isLixeira) {
+                  acaoBotao = `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️</button>`;
+              } else {
+                  const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
+                  // Lógica para alternar entre 🚫 e ♻️ na lista de sorteados
+                  const botaoEliminarRestaurar = curso.isEliminado
+                      ? `<button title="Restaurar curso" onclick="toggleEliminadoDaLista(${curso.id}, ${isSorteados}, true)">♻️</button>`
+                      : `<button title="Eliminar curso" onclick="toggleEliminadoDaLista(${curso.id}, ${isSorteados}, false)">🚫</button>`;
+      
+                  acaoBotao = `
+                      <button title="Favoritar curso" class="${classeFavorito}" onclick="toggleFavoritoDaLista(${curso.id}, ${isSorteados})">⭐</button>
+                      ${botaoEliminarRestaurar}
+                  `;
+              }
+              cardsHTML += `
+              <article class="card-lista" id="lista-card-${curso.id}">
+                <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
+                <div class="card-content-lista"><h2>${curso.Curso}</h2><p>${curso.Campus}</p></div>
+                <div class="card-actions-lista">${acaoBotao}</div>
+              </article>`;
+          });
         }
     
         const botaoLimpar = isSorteados ? '<button onclick="limparListaSorteados()" class="danger" style="margin-top: 1rem; width: 100%;">Limpar Histórico de Sorteios</button>' : '';
@@ -939,19 +946,25 @@
     }
 
     function acaoFavoritarSorteado(cursoId) {
-        // Ativa o modo de edição se não estiver ativo
         if (!modoEdicaoAtivo) {
             document.getElementById('toggle-edit-mode').click();
         }
-        // Favorita o curso
         toggleFavorito(cursoId);
+        salvarListas();
     
-        // Atualiza o visual do botão dentro do modal
+        // Atualiza o visual do botão DENTRO do modal
         const curso = cursos.find(c => c.id === cursoId);
         const modalButton = document.querySelector(`#modal-${cursoId} .modal-actions button:first-child`);
         if (modalButton) {
             modalButton.classList.toggle('favorito-ativo', curso.isFavorito);
             const starIcon = modalButton.querySelector('.material-symbols-outlined');
+            starIcon.textContent = curso.isFavorito ? 'star' : 'star_border';
+        }
+        // E também atualiza o card LÁ NO FUNDO, para consistência
+        const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:first-child`);
+        if(cardButton) {
+            cardButton.classList.toggle('favorito-ativo', curso.isFavorito);
+            const starIcon = cardButton.querySelector('.material-symbols-outlined');
             starIcon.textContent = curso.isFavorito ? 'star' : 'star_border';
         }
     }
@@ -1108,23 +1121,45 @@
     }
     function toggleFavoritoDaLista(cursoId, isSorteados) {
         toggleFavorito(cursoId);
-        // Se for a lista de favoritos, o item some ao ser desfavoritado
+        salvarListas(); // Garante que a mudança seja salva
+    
+        const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
+        if (!cardNaLista) return;
+    
         if (!isSorteados) {
-            const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
-            if (cardNaLista) cardNaLista.remove();
+            // Se for a lista de favoritos, o item some ao ser desfavoritado
+            cardNaLista.remove();
         } else {
             // Se for a lista de sorteados, apenas atualiza a cor da estrela
             const curso = cursos.find(c => c.id === cursoId);
-            const buttonNaLista = document.querySelector(`#lista-card-${cursoId} .card-actions-lista button:first-child`);
+            const buttonNaLista = cardNaLista.querySelector('.card-actions-lista button:first-child');
             if(buttonNaLista) buttonNaLista.classList.toggle('favorito-ativo', curso.isFavorito);
         }
     }
     
-    function toggleEliminadoDaLista(cursoId) {
+    function toggleEliminadoDaLista(cursoId, isSorteados, isRestaurando) {
         toggleEliminado(cursoId);
-        // Ao ser eliminado, o item sempre some de qualquer lista onde esteja
-        const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
-        if (cardNaLista) cardNaLista.remove();
+        salvarListas(); // Garante que a mudança seja salva
+    
+        if (isSorteados) {
+            // Na lista de sorteados, o curso nunca some, apenas o botão muda
+            const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
+            if (!cardNaLista) return;
+            
+            // Recria apenas os botões para refletir o novo estado (🚫 ou ♻️)
+            const curso = cursos.find(c => c.id === cursoId);
+            const botaoEliminarRestaurar = curso.isEliminado
+                ? `<button title="Restaurar curso" onclick="toggleEliminadoDaLista(${curso.id}, true, true)">♻️</button>`
+                : `<button title="Eliminar curso" onclick="toggleEliminadoDaLista(${curso.id}, true, false)">🚫</button>`;
+            
+            // Atualiza o botão específico
+            cardNaLista.querySelector('.card-actions-lista button:last-child').outerHTML = botaoEliminarRestaurar;
+    
+        } else {
+            // Em outras listas (como favoritos), o item some ao ser eliminado
+            const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
+            if (cardNaLista) cardNaLista.remove();
+        }
     }
     // Função principal que lê as opções, prepara os dados e gera o PDF
     function gerarPDF() {
