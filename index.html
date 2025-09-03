@@ -849,7 +849,8 @@
         if (!curso) return;
     
         curso.isEliminado = !curso.isEliminado;
-    
+        salvarListas(); // Salva o estado
+
         // Se estamos RESTAURANDO um curso da lixeira
         if (!curso.isEliminado) {
             // A melhor abordagem é redesenhar a lista para que ele
@@ -857,7 +858,7 @@
             filtrarCursos();
             return; 
         }
-    }
+
         // Se estamos ELIMINANDO um curso
         const cardElement = document.getElementById(`card-${cursoId}`);
         if (cardElement) {
