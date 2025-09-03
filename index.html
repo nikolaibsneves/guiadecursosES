@@ -956,27 +956,29 @@
     }
 
     function restaurarCursoDaLixeira(cursoId) {
-        toggleEliminado(cursoId);
+        const curso = cursos.find(c => c.id === cursoId);
+        if (!curso) return;
+    
+        // Apenas muda o estado e salva. Não chama mais toggleEliminado.
+        curso.isEliminado = false; 
+        salvarListas();
+    
+        // Remove o card da lista do modal da lixeira
         const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
         if (cardNaLista) {
-          cardNaLista.remove();
+            cardNaLista.remove();
         }
+        // Força a re-filtragem dos cards na tela principal para o curso reaparecer
+        filtrarCursos();
     }
     function acaoFavoritarSorteado(cursoId) {
-        // Se o modo de edição não estiver ativo, ative-o MANUALMENTE
         if (!modoEdicaoAtivo) {
             modoEdicaoAtivo = true;
             document.body.classList.add('modo-edicao-ativo');
-            const toggleButton = document.getElementById('toggle-edit-mode');
-            toggleButton.classList.add('active');
-            
-            // AVISO: Não chamamos filtrarCursos() aqui para não fechar o modal!
-            // Em vez disso, vamos recriar os modais de cursos visíveis para adicionar os botões
-            // Esta é uma abordagem mais avançada para manter a consistência.
-            renderizarMaisCursos(true); // O 'true' força a recriação dos modais visíveis
+            document.getElementById('toggle-edit-mode').classList.add('active');
         }
-        
-        // Agora, chama a função 'mestre' que faz todo o trabalho
+        // A função toggleFavorito já é inteligente o suficiente para atualizar
+        // tanto o card quanto o modal. Não precisamos de mais nada aqui.
         toggleFavorito(cursoId);
     }
     
