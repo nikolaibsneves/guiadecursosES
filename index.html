@@ -834,52 +834,70 @@
     function toggleFavorito(cursoId) {
         const curso = cursos.find(c => c.id === cursoId);
         if (!curso) return;
+    
+        // Ação: Mudar o status de favorito
         curso.isFavorito = !curso.isFavorito;
-        salvarListas();
-        const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:nth-child(1)`);
+    
+        // NOVA REGRA: Se o curso foi favoritado, ele NÃO PODE estar eliminado.
+        if (curso.isFavorito && curso.isEliminado) {
+            curso.isEliminado = false;
+                // Se deseliminou, o card pode precisar reaparecer se os filtros permitirem
+        filtrarCursos(); 
+        } else if (!curso.isFavorito && curso.isEliminado) {
+            // Se desfavoritou um curso que ainda está eliminado, 
+            // a gente não precisa fazer nada especial aqui.
+        }
+        
+        salvarListas(); // Salva ambos os estados
+    
+        // 1. Atualiza o visual do CARD na tela principal
+        const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:first-child`);
         if (cardButton) {
             const starIcon = cardButton.querySelector('.material-symbols-outlined');
             cardButton.classList.toggle('favorito-ativo', curso.isFavorito);
             starIcon.textContent = curso.isFavorito ? 'star' : 'star_border';
         }
+    
+        // 2. Atualiza o visual do BOTÃO DENTRO DO MODAL (se houver um modal de curso aberto para ele)
+        const modalButton = document.querySelector(`#modal-${cursoId} .modal-actions button:first-child`);
+        if (modalButton) {
+            modalButton.classList.toggle('favorito-ativo', curso.isFavorito);
+            const starIcon = modalButton.querySelector('.material-symbols-outlined');
+            starIcon.textContent = curso.isFavorito ? 'star' : 'star_border';
+        }
     }
-
+    
     function toggleEliminado(cursoId) {
         const curso = cursos.find(c => c.id === cursoId);
         if (!curso) return;
     
+        // Ação: Mudar o status de eliminado
         curso.isEliminado = !curso.isEliminado;
-        salvarListas(); // Salva o estado
     
-        // Se estamos RESTAURANDO um curso da lixeira
-        if (!curso.isEliminado) {
-            filtrarCursos();
-            return; 
+        // NOVA REGRA: Se o curso foi eliminado, ele NÃO PODE ser favorito.
+        if (curso.isEliminado && curso.isFavorito) {
+            curso.isFavorito = false;
+            // E atualiza a estrelinha do card para refletir isso
+            const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:first-child`);
+            if (cardButton) {
+                cardButton.classList.remove('favorito-ativo');
+                cardButton.querySelector('.material-symbols-outlined').textContent = 'star_border';
+            }
         }
+        
+        salvarListas(); // Salva ambos os estados
     
-        // Se estamos ELIMINANDO um curso
+        // O resto da lógica de animação e remoção continua igual...
         const cardElement = document.getElementById(`card-${cursoId}`);
-        if (cardElement) {
+        if (curso.isEliminado && cardElement) {
             cardElement.classList.add('eliminando');
-    
             cardElement.addEventListener('animationend', () => {
-                // Só depois que a animação ACABA, o card é removido.
                 cardElement.remove();
-    
-                // Encontra o índice do curso removido na lista filtrada
-                const index = cursosFiltrados.findIndex(c => c.id === cursoId);
-                // Se encontrar, remove-o da lista na memória
-                if (index > -1) {
-                    cursosFiltrados.splice(index, 1);
-                }
-                
-                // AGORA SIM, DENTRO DO CALLBACK:
-                // Atualizamos o contador após a remoção
                 atualizarContagem();
-                // E verificamos se precisa carregar mais cursos
                 verificarECarregarMaisSeNecessario();
-    
             }, { once: true });
+        } else if (!curso.isEliminado) {
+            filtrarCursos();
         }
     }
 
