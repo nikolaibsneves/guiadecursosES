@@ -942,9 +942,10 @@
     function restaurarCursoDaLixeira(cursoId) {
         toggleEliminado(cursoId);
         const cardNaLista = document.getElementById(`lista-card-${cursoId}`);
-        if (cardNaLista) cardNaLista.remove();
+        if (cardNaLista) {
+          cardNaLista.remove();
+        }
     }
-
     function acaoFavoritarSorteado(cursoId) {
         if (!modoEdicaoAtivo) {
             document.getElementById('toggle-edit-mode').click();
