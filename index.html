@@ -850,39 +850,36 @@
     
         curso.isEliminado = !curso.isEliminado;
         salvarListas(); // Salva o estado
-
+    
         // Se estamos RESTAURANDO um curso da lixeira
         if (!curso.isEliminado) {
-            // A melhor abordagem é redesenhar a lista para que ele
-            // apareça no lugar alfabético correto.
             filtrarCursos();
             return; 
         }
-
+    
         // Se estamos ELIMINANDO um curso
         const cardElement = document.getElementById(`card-${cursoId}`);
         if (cardElement) {
-            // Adiciona a classe que dispara a animação CSS
             cardElement.classList.add('eliminando');
     
-            // Escutamos pelo evento 'animationend', que é mais confiável que 'transitionend'
             cardElement.addEventListener('animationend', () => {
-                // Só depois que a animação ACABA, o card é removido de verdade.
-                // Isso força o grid a se reorganizar.
+                // Só depois que a animação ACABA, o card é removido.
                 cardElement.remove();
-             // Encontra o índice do curso removido na lista filtrada
-            const index = cursosFiltrados.findIndex(c => c.id === cursoId);
-            // Se encontrar, remove-o da lista na memória
-            if (index > -1) {
-                cursosFiltrados.splice(index, 1);
-            }
-          }
+    
+                // Encontra o índice do curso removido na lista filtrada
+                const index = cursosFiltrados.findIndex(c => c.id === cursoId);
+                // Se encontrar, remove-o da lista na memória
+                if (index > -1) {
+                    cursosFiltrados.splice(index, 1);
+                }
+                
+                // AGORA SIM, DENTRO DO CALLBACK:
                 // Atualizamos o contador após a remoção
                 atualizarContagem();
-    
                 // E verificamos se precisa carregar mais cursos
                 verificarECarregarMaisSeNecessario();
-            }, { once: true }); // {once: true} garante que isso só aconteça uma vez por clique
+    
+            }, { once: true });
         }
     }
 
