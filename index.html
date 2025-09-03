@@ -621,29 +621,30 @@
         localStorage.setItem('cursosSorteados', JSON.stringify(sorteadosIds));
     }
   
-    function renderizarMaisCursos() {
-        if (carregando || offset >= cursosFiltrados.length) {
-            return;
-        }
-        carregando = true;
-        document.getElementById('loader').style.display = "block";
-        setTimeout(() => {
-            const proxCursos = cursosFiltrados.slice(offset, offset + limit);
-            let cardsHTML = '';
-            let modalsHTML = '';
-            proxCursos.forEach(curso => {
-                cardsHTML += criarCard(curso);
-                modalsHTML += criarModal(curso);
+    function renderizarMaisCursos(recriarModaisVisiveis = false) {
+        const container = document.getElementById('cards');
+        const modalsContainer = document.getElementById('modals');
+        const fimDaLista = offset + BATCH_SIZE;
+        const cursosParaRenderizar = cursosFiltrados.slice(offset, fimDaLista);
+    
+        if (recriarModaisVisiveis) {
+            // Apaga e recria APENAS os modais dos cards que já estão na tela
+            modalsContainer.innerHTML = '';
+            const cursosJaRenderizados = cursosFiltrados.slice(0, offset);
+            cursosJaRenderizados.forEach(curso => {
+                modalsContainer.insertAdjacentHTML('beforeend', criarModal(curso, modoEdicaoAtivo ? 'edicao' : 'normal'));
             });
-            document.getElementById('cards').insertAdjacentHTML('beforeend', cardsHTML);
-            document.getElementById('modals').insertAdjacentHTML('beforeend', modalsHTML);
-            offset += proxCursos.length;
-            atualizarContagem();
-            document.getElementById('loader').style.display = "none";
-            carregando = false;
-            // Agora apenas chama nossa nova função centralizada
-            verificarECarregarMaisSeNecessario();
-          }, 300);
+        }
+    
+        cursosParaRenderizar.forEach(curso => {
+            container.insertAdjacentHTML('beforeend', criarCard(curso));
+            modalsContainer.insertAdjacentHTML('beforeend', criarModal(curso, modoEdicaoAtivo ? 'edicao' : 'normal'));
+        });
+    
+        offset = fimDaLista;
+        document.getElementById('loading').style.display = 'none';
+        atualizarContagem();
+        verificarECarregarMaisSeNecessario();
     }
     function sortearCursoSurpresa(isResorteio = false) {
         if (cursosFiltrados.length === 0) {
@@ -835,35 +836,32 @@
         const curso = cursos.find(c => c.id === cursoId);
         if (!curso) return;
     
-        // Ação: Mudar o status de favorito
+        // Lógica principal
         curso.isFavorito = !curso.isFavorito;
-    
-        // NOVA REGRA: Se o curso foi favoritado, ele NÃO PODE estar eliminado.
         if (curso.isFavorito && curso.isEliminado) {
             curso.isEliminado = false;
-                // Se deseliminou, o card pode precisar reaparecer se os filtros permitirem
-        filtrarCursos(); 
-        } else if (!curso.isFavorito && curso.isEliminado) {
-            // Se desfavoritou um curso que ainda está eliminado, 
-            // a gente não precisa fazer nada especial aqui.
         }
-        
-        salvarListas(); // Salva ambos os estados
+        salvarListas();
     
-        // 1. Atualiza o visual do CARD na tela principal
+        // --- ATUALIZAÇÃO VISUAL CENTRALIZADA ---
+    
+        // 1. Atualiza o Card
         const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:first-child`);
         if (cardButton) {
-            const starIcon = cardButton.querySelector('.material-symbols-outlined');
             cardButton.classList.toggle('favorito-ativo', curso.isFavorito);
-            starIcon.textContent = curso.isFavorito ? 'star' : 'star_border';
+            cardButton.querySelector('.material-symbols-outlined').textContent = curso.isFavorito ? 'star' : 'star_border';
         }
     
-        // 2. Atualiza o visual do BOTÃO DENTRO DO MODAL (se houver um modal de curso aberto para ele)
+        // 2. Atualiza o Modal (seja de edição ou sorteio)
         const modalButton = document.querySelector(`#modal-${cursoId} .modal-actions button:first-child`);
         if (modalButton) {
             modalButton.classList.toggle('favorito-ativo', curso.isFavorito);
-            const starIcon = modalButton.querySelector('.material-symbols-outlined');
-            starIcon.textContent = curso.isFavorito ? 'star' : 'star_border';
+            modalButton.querySelector('.material-symbols-outlined').textContent = curso.isFavorito ? 'star' : 'star_border';
+        }
+        
+        // Se um curso foi restaurado da lixeira ao ser favoritado, atualize a tela
+        if (curso.isFavorito && curso.isEliminado === false) {
+            filtrarCursos();
         }
     }
     
@@ -964,27 +962,21 @@
         }
     }
     function acaoFavoritarSorteado(cursoId) {
+        // Se o modo de edição não estiver ativo, ative-o MANUALMENTE
         if (!modoEdicaoAtivo) {
-            document.getElementById('toggle-edit-mode').click();
+            modoEdicaoAtivo = true;
+            document.body.classList.add('modo-edicao-ativo');
+            const toggleButton = document.getElementById('toggle-edit-mode');
+            toggleButton.classList.add('active');
+            
+            // AVISO: Não chamamos filtrarCursos() aqui para não fechar o modal!
+            // Em vez disso, vamos recriar os modais de cursos visíveis para adicionar os botões
+            // Esta é uma abordagem mais avançada para manter a consistência.
+            renderizarMaisCursos(true); // O 'true' força a recriação dos modais visíveis
         }
+        
+        // Agora, chama a função 'mestre' que faz todo o trabalho
         toggleFavorito(cursoId);
-        salvarListas();
-    
-        // Atualiza o visual do botão DENTRO do modal
-        const curso = cursos.find(c => c.id === cursoId);
-        const modalButton = document.querySelector(`#modal-${cursoId} .modal-actions button:first-child`);
-        if (modalButton) {
-            modalButton.classList.toggle('favorito-ativo', curso.isFavorito);
-            const starIcon = modalButton.querySelector('.material-symbols-outlined');
-            starIcon.textContent = curso.isFavorito ? 'star' : 'star_border';
-        }
-        // E também atualiza o card LÁ NO FUNDO, para consistência
-        const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:first-child`);
-        if(cardButton) {
-            cardButton.classList.toggle('favorito-ativo', curso.isFavorito);
-            const starIcon = cardButton.querySelector('.material-symbols-outlined');
-            starIcon.textContent = curso.isFavorito ? 'star' : 'star_border';
-        }
     }
     
     function acaoEliminarSorteado(cursoId) {
