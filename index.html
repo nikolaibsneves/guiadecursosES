@@ -443,6 +443,7 @@
     <p id="contador-cursos" style="font-weight:bold; margin-bottom:1rem;">Exibindo 0 cursos com os filtros selecionados</p>
     
     <section id="cards" class="card-container" aria-label="Lista de cursos"></section>
+    <div id="loading" class="loading-indicator">Carregando mais cursos...</div>
     <div id="loader" style="text-align:center; display:none; margin:2rem 0; font-style:italic; color:#555;">
       Carregando mais cursos...
     </div>
@@ -837,6 +838,8 @@
         const curso = cursos.find(c => c.id === cursoId);
         if (!curso) return;
     
+        const estavaEliminado = curso.isEliminado; // Guarda o estado anterior
+    
         // Lógica principal
         curso.isFavorito = !curso.isFavorito;
         if (curso.isFavorito && curso.isEliminado) {
@@ -844,24 +847,22 @@
         }
         salvarListas();
     
-        // --- ATUALIZAÇÃO VISUAL CENTRALIZADA ---
-    
-        // 1. Atualiza o Card
+        // Atualização visual centralizada (card e modal)
         const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:first-child`);
         if (cardButton) {
             cardButton.classList.toggle('favorito-ativo', curso.isFavorito);
             cardButton.querySelector('.material-symbols-outlined').textContent = curso.isFavorito ? 'star' : 'star_border';
         }
-    
-        // 2. Atualiza o Modal (seja de edição ou sorteio)
         const modalButton = document.querySelector(`#modal-${cursoId} .modal-actions button:first-child`);
         if (modalButton) {
             modalButton.classList.toggle('favorito-ativo', curso.isFavorito);
             modalButton.querySelector('.material-symbols-outlined').textContent = curso.isFavorito ? 'star' : 'star_border';
         }
         
-        // Se um curso foi restaurado da lixeira ao ser favoritado, atualize a tela
-        if (curso.isFavorito && curso.isEliminado === false) {
+        // Se um curso foi restaurado da lixeira ao ser favoritado,
+        // E NENHUM MODAL DE CURSO ESTIVER ABERTO, atualize a tela.
+        const isModalDeCursoAberto = document.querySelector('.modal[id^="modal-"][style*="display: block"]');
+        if (estavaEliminado && !isModalDeCursoAberto) {
             filtrarCursos();
         }
     }
