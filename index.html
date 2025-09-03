@@ -835,6 +835,7 @@
         const curso = cursos.find(c => c.id === cursoId);
         if (!curso) return;
         curso.isFavorito = !curso.isFavorito;
+        salvarListas();
         const cardButton = document.querySelector(`#card-${cursoId} .card-actions button:nth-child(1)`);
         if (cardButton) {
             const starIcon = cardButton.querySelector('.material-symbols-outlined');
@@ -1045,8 +1046,13 @@
                     abrirModalDeLista('Cursos na Lixeira', eliminados, true);
                 });
                 document.getElementById('clear-lists').addEventListener('click', () => {
-                    if (confirm('Tem certeza que deseja limpar suas listas? Esta ação não pode ser desfeita.')) {
-                        cursos.forEach(c => { c.isFavorito = false; c.isEliminado = false; });
+                    if (confirm('Tem certeza que deseja limpar TODAS as suas listas (Favoritos, Lixeira e Sorteados)? Esta ação não pode ser desfeita.')) {
+                        cursos.forEach(c => {
+                            c.isFavorito = false;
+                            c.isEliminado = false;
+                            c.isSorteado = false;
+                        });
+                        salvarListas(); // Salva o estado limpo
                         filtrarCursos();
                     }
                 });
