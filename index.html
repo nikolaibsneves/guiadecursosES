@@ -394,6 +394,11 @@
         50% { transform: scale(1.1); }
         100% { transform: scale(1); }
       }
+      /* Regra de Ouro para a Estrela Amarela */
+      .favorito-ativo,
+      .favorito-ativo .material-symbols-outlined {
+        color: #ffc107 !important; /* Amarelo-ouro */
+      }
   </style>
 </head>
 <body>
@@ -910,30 +915,31 @@
             cardsHTML = '<p>Nenhum curso aqui. A lista está vazia.</p>';
         } else {
             listaDeCursos.forEach(curso => {
-          const nomeIcone = getIconeParaCurso(curso.Curso);
-              let acaoBotao = '';
-      
-              if (isLixeira) {
-                  acaoBotao = `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️</button>`;
-              } else {
-                  const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
-                  // Lógica para alternar entre 🚫 e ♻️ na lista de sorteados
-                  const botaoEliminarRestaurar = curso.isEliminado
-                      ? `<button title="Restaurar curso" onclick="toggleEliminadoDaLista(${curso.id}, ${isSorteados}, true)">♻️</button>`
-                      : `<button title="Eliminar curso" onclick="toggleEliminadoDaLista(${curso.id}, ${isSorteados}, false)">🚫</button>`;
-      
-                  acaoBotao = `
-                      <button title="Favoritar curso" class="${classeFavorito}" onclick="toggleFavoritoDaLista(${curso.id}, ${isSorteados})">⭐</button>
-                      ${botaoEliminarRestaurar}
-                  `;
-              }
-              cardsHTML += `
-              <article class="card-lista" id="lista-card-${curso.id}">
-                <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
-                <div class="card-content-lista"><h2>${curso.Curso}</h2><p>${curso.Campus}</p></div>
-                <div class="card-actions-lista">${acaoBotao}</div>
-              </article>`;
-          });
+                const nomeIcone = getIconeParaCurso(curso.Curso);
+                let acaoBotao = '';
+    
+                if (isLixeira) {
+                    acaoBotao = `<button title="Restaurar curso" onclick="restaurarCursoDaLixeira(${curso.id})">♻️</button>`;
+                } else { // Para Favoritos e Sorteados
+                    // A CORREÇÃO ESTÁ AQUI: Verifica o status do curso para definir a classe
+                    const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
+                    
+                    const botaoEliminarRestaurar = curso.isEliminado
+                        ? `<button title="Restaurar curso" onclick="toggleEliminadoDaLista(${curso.id}, ${isSorteados}, true)">♻️</button>`
+                        : `<button title="Eliminar curso" onclick="toggleEliminadoDaLista(${curso.id}, ${isSorteados}, false)">🚫</button>`;
+    
+                    acaoBotao = `
+                        <button title="Favoritar curso" class="${classeFavorito}" onclick="toggleFavoritoDaLista(${curso.id}, ${isSorteados})">⭐</button>
+                        ${botaoEliminarRestaurar}
+                    `;
+                }
+                cardsHTML += `
+                <article class="card-lista" id="lista-card-${curso.id}">
+                  <span class="material-symbols-outlined card-icon-lista">${nomeIcone}</span>
+                  <div class="card-content-lista"><h2>${curso.Curso}</h2><p>${curso.Campus}</p></div>
+                  <div class="card-actions-lista">${acaoBotao}</div>
+                </article>`;
+            });
         }
     
         const botaoLimpar = isSorteados ? '<button onclick="limparListaSorteados()" class="danger" style="margin-top: 1rem; width: 100%;">Limpar Histórico de Sorteios</button>' : '';
