@@ -405,6 +405,34 @@
       .favorito-ativo .material-symbols-outlined {
         color: #ffc107 !important; /* Amarelo-ouro */
       }
+      /* Ajuste no conteúdo do modal para servir de âncora para a logo */
+      .modal-content {
+        position: relative; /* Essencial para o posicionamento da logo */
+      }
+      
+      /* Container para o título e o ícone do curso */
+      .modal-title-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5em; /* Espaço entre o ícone e o título */
+        margin-right: 70px; /* Garante espaço para a logo não sobrepor o título */
+      }
+      
+      /* Estilo do ícone do curso no título do modal */
+      .modal-title-icon {
+        font-size: inherit; /* Herda o tamanho do título h2 */
+        color: #003366;    /* Mantém a cor azul do card */
+      }
+      
+      /* Estilo e posicionamento da logo da instituição no modal */
+      .modal-institution-logo {
+        position: absolute;
+        top: 1rem; /* Distância do topo do modal */
+        right: 1rem; /* Distância da direita do modal */
+        max-width: 60px;  /* Mesmo tamanho máximo do card */
+        max-height: 60px;
+        object-fit: contain;
+      }
   </style>
 </head>
 <body>
@@ -532,8 +560,12 @@
     }
 
     function criarModal(curso, contexto = 'normal') {
+        // Busca o nome do ícone e o arquivo da logo
+        const nomeIcone = getIconeParaCurso(curso.Curso);
+        const arquivoLogo = getLogoParaCurso(curso.Instituição);
+    
         let actionsHTML = '';
-        // Lógica para decidir quais botões mostrar
+        // ... (toda a sua lógica de botões 'if/else' continua EXATAMENTE IGUAL aqui) ...
         if (contexto === 'edicao') {
             const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
             const iconeEstrela = curso.isFavorito ? 'star' : 'star_border';
@@ -552,24 +584,35 @@
                 <button onclick="acaoEliminarSorteado(${curso.id})">🚫 Eliminar e Sortear</button>
             </div>`;
         }
-
-    const formaDeAcessoComLink = transformarLinks(curso["Forma de acesso"]);
-    return `
-    <div id="modal-${curso.id}" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="fecharModal('modal-${curso.id}')">&times;</span>
-        ${curso.VideoID ? `<iframe data-src="https://www.youtube.com/embed/${curso.VideoID}" title="YouTube video player" allowfullscreen></iframe>` : ''}
-        <h2>${curso.Curso}</h2>
-        <p><strong>Tipo:</strong> ${curso.Tipo}</p>
-        <p><strong>Instituição:</strong> ${curso.Instituição || "UFES"}</p>
-        <p><strong>Campus:</strong> ${curso.Campus}</p>
-        <p><strong>Horário:</strong> ${curso.Horário}</p>
-        <p><strong>Acesso:</strong> ${formaDeAcessoComLink}</p>
-        <a href="${curso["Página do curso"]}" target="_blank">Visitar a página do curso</a>
-        ${actionsHTML} 
-      </div>
-    </div>`;
-}
+    
+    
+        const formaDeAcessoComLink = transformarLinks(curso["Forma de acesso"]);
+    
+        // Gera o HTML do modal com os novos elementos
+        return `
+        <div id="modal-${curso.id}" class="modal">
+          <div class="modal-content">
+            <span class="close" onclick="fecharModal('modal-${curso.id}')">&times;</span>
+            
+            <img src="${arquivoLogo}" alt="Logo de ${curso.Instituição || 'UFES'}" class="modal-institution-logo">
+            
+            ${curso.VideoID ? `<iframe data-src="https://www.youtube.com/embed/${curso.VideoID}" title="YouTube video player" allowfullscreen></iframe>` : ''}
+            
+            <div class="modal-title-container">
+              <span class="material-symbols-outlined modal-title-icon">${nomeIcone}</span>
+              <h2>${curso.Curso}</h2>
+            </div>
+    
+            <p><strong>Tipo:</strong> ${curso.Tipo}</p>
+            <p><strong>Instituição:</strong> ${curso.Instituição || "UFES"}</p>
+            <p><strong>Campus:</strong> ${curso.Campus}</p>
+            <p><strong>Horário:</strong> ${curso.Horário}</p>
+            <p><strong>Acesso:</strong> ${formaDeAcessoComLink}</p>
+            <a href="${curso["Página do curso"]}" target="_blank">Visitar a página do curso</a>
+            ${actionsHTML} 
+          </div>
+        </div>`;
+    }
 
     function abrirModalDeCurso(cursoId) {
         const contexto = modoEdicaoAtivo ? 'edicao' : 'normal';
@@ -842,7 +885,19 @@
         if (nome.includes('AGRONOMIA')) return 'eco';
         return 'book_4';
     }
-
+    function getLogoParaCurso(instituicao) {
+        const inst = instituicao || "UFES"; // Garante que UFES seja o padrão
+        switch (inst.toUpperCase()) {
+            case 'UFES':
+                return 'logo_ufes_pequena.png';
+            case 'IFES':
+                return 'logo_ifes_pequena.png';
+            case 'FAMES':
+                return 'logo_fames_pequena.png';
+            default:
+                return ''; // Retorna vazio se não encontrar
+        }
+    }
     // --- FUNÇÕES PARA O MODO "ELIMINE E FAVORITE" ---
 
     function toggleFavorito(cursoId) {
