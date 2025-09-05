@@ -420,7 +420,7 @@
       
       /* Estilo do ícone do curso no título do modal */
       .modal-title-icon {
-        font-size: inherit; /* Herda o tamanho do título h2 */
+        font-size: 1em;
         color: #003366;    /* Mantém a cor azul do card */
       }
       
@@ -889,11 +889,11 @@
         const inst = instituicao || "UFES"; // Garante que UFES seja o padrão
         switch (inst.toUpperCase()) {
             case 'UFES':
-                return 'logo_ufes_pequena.png';
+                return 'img/logo_ufes_pequena.png';
             case 'IFES':
-                return 'logo_ifes_pequena.png';
+                return 'img/logo_ifes_pequena.png';
             case 'FAMES':
-                return 'logo_fames_pequena.png';
+                return 'img/logo_fames_pequena.png';
             default:
                 return ''; // Retorna vazio se não encontrar
         }
