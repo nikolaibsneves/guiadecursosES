@@ -420,19 +420,25 @@
       
       /* Estilo do ícone do curso no título do modal */
       .modal-title-icon {
-        font-size: 1em;
+        font-size: 1.5em;
         color: #003366;    /* Mantém a cor azul do card */
       }
       
       /* Estilo e posicionamento da logo da instituição no modal */
       .modal-institution-logo {
-        position: absolute;
-        top: 1rem; /* Distância do topo do modal */
-        right: 1rem; /* Distância da direita do modal */
         max-width: 60px;  /* Mesmo tamanho máximo do card */
         max-height: 60px;
         object-fit: contain;
       }
+    .modal-info-container {
+      display: flex;
+      flex-wrap: wrap; /* Permite que os itens quebrem a linha em telas menores */
+      justify-content: space-between; /* Empurra a logo para a direita */
+      align-items: center; /* Alinha verticalmente os itens */
+    }
+    .modal-info-container p {
+      flex-basis: 70%; /* Os parágrafos ocupam 70% da largura, deixando 30% para a logo */
+    }
   </style>
 </head>
 <body>
@@ -560,12 +566,10 @@
     }
 
     function criarModal(curso, contexto = 'normal') {
-        // Busca o nome do ícone e o arquivo da logo
         const nomeIcone = getIconeParaCurso(curso.Curso);
         const arquivoLogo = getLogoParaCurso(curso.Instituição);
     
         let actionsHTML = '';
-        // ... (toda a sua lógica de botões 'if/else' continua EXATAMENTE IGUAL aqui) ...
         if (contexto === 'edicao') {
             const classeFavorito = curso.isFavorito ? 'favorito-ativo' : '';
             const iconeEstrela = curso.isFavorito ? 'star' : 'star_border';
@@ -585,16 +589,12 @@
             </div>`;
         }
     
-    
         const formaDeAcessoComLink = transformarLinks(curso["Forma de acesso"]);
     
-        // Gera o HTML do modal com os novos elementos
         return `
         <div id="modal-${curso.id}" class="modal">
           <div class="modal-content">
             <span class="close" onclick="fecharModal('modal-${curso.id}')">&times;</span>
-            
-            <img src="${arquivoLogo}" alt="Logo de ${curso.Instituição || 'UFES'}" class="modal-institution-logo">
             
             ${curso.VideoID ? `<iframe data-src="https://www.youtube.com/embed/${curso.VideoID}" title="YouTube video player" allowfullscreen></iframe>` : ''}
             
@@ -603,8 +603,12 @@
               <h2>${curso.Curso}</h2>
             </div>
     
-            <p><strong>Tipo:</strong> ${curso.Tipo}</p>
-            <p><strong>Instituição:</strong> ${curso.Instituição || "UFES"}</p>
+            <div class="modal-info-container"> <div> <p><strong>Tipo:</strong> ${curso.Tipo}</p>
+                    <p><strong>Instituição:</strong> ${curso.Instituição || "UFES"}</p>
+                </div>
+                ${arquivoLogo ? `<img src="${arquivoLogo}" alt="Logo de ${curso.Instituição || 'UFES'}" class="modal-institution-logo">` : ''}
+            </div>
+            
             <p><strong>Campus:</strong> ${curso.Campus}</p>
             <p><strong>Horário:</strong> ${curso.Horário}</p>
             <p><strong>Acesso:</strong> ${formaDeAcessoComLink}</p>
