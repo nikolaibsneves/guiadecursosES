@@ -863,30 +863,64 @@
     function getIconeParaCurso(nomeDoCurso) {
         const nome = nomeDoCurso.toUpperCase();
         // Regras mais específicas vêm primeiro
-        if (nome.includes('EDUCAÇÃO FÍSICA')) return 'sports_gymnastics'; // Ícone para Ed. Física
-        if (nome.includes('FÍSICA')) return 'radio_button_checked'; // Ícone para Física (quântica, etc.)
-        if (nome.includes('ENGENHARIA')) return 'engineering';
-        if (nome.includes('COMPUTAÇÃO') || nome.includes('SISTEMAS')) return 'computer';
-        if (nome.includes('DIREITO')) return 'gavel';
-        if (nome.includes('MEDICINA')) return 'local_hospital';
-        if (nome.includes('ARQUITETURA')) return 'architecture';
-        if (nome.includes('QUÍMICA')) return 'science';
-        if (nome.includes('BIOLÓGICAS') || nome.includes('BIOLOGIA')) return 'biotech';
-        if (nome.includes('MATEMÁTICA')) return 'functions';
-        if (nome.includes('LETRAS')) return 'translate';
-        if (nome.includes('PEDAGOGIA') || nome.includes('EDUCAÇÃO')) return 'school';
-        if (nome.includes('HISTÓRIA')) return 'history_edu';
-        if (nome.includes('GEOGRAFIA')) return 'public';
-        if (nome.includes('FILOSOFIA')) return 'psychology';
+
+        // 1. Regras para LETRAS (Livro para Português, Globo para estrangeiras)
+        if (nome.includes('LETRAS')) {
+            if (nome.includes('PORTUGUÊS') || nome.includes('PORTUGUES')) {
+                return 'menu_book'; // Livro
+            }
+            return 'language'; // Globo (Inglês, Francês, etc.)
+        }
+        // 2. Mapeamento Específico (Baseado nas suas sugestões)
+        if (nome.includes('ADMINISTRA')) return 'analytics';
+        if (nome.includes('AGRONOMIA')) return 'agriculture';
+        if (nome.includes('ARQUITETURA') || nome.includes('URBANISMO')) return 'architecture';
+        if (nome.includes('ARQUIVOLOGIA')) return 'shelves';
         if (nome.includes('ARTES')) return 'palette';
+        if (nome.includes('BIBLIOTECONOMIA')) return 'local_library';
+        
+        if (nome.includes('COMPUTAÇÃO') || nome.includes('SISTEMAS') || nome.includes('INFORMATICA')) return 'terminal';
+        
+        if (nome.includes('BIOLÓGICA') || nome.includes('BIOLOGIA')) return 'biotech';
+        
+        // Contábeis e Economia
+        if (nome.includes('CONTÁBEIS')) return 'calculate'; 
+        if (nome.includes('ECONÔMICA') || nome.includes('ECONOMIA')) return 'finance';
+    
+        if (nome.includes('CINEMA') || nome.includes('AUDIOVISUAL')) return 'movie';
+        if (nome.includes('DESIGN') || nome.includes('DESENHO')) return 'brush';
+        if (nome.includes('DIREITO')) return 'gavel'; 
+        
+        if (nome.includes('EDUCAÇÃO FÍSICA')) return 'sports_handball';
+        
+        if (nome.includes('ENFERMAGEM')) return 'vaccines';
+        // Importante: Veterinária deve vir antes de Medicina para não confundir
+        if (nome.includes('VETERINÁRIA')) return 'pets';
+        if (nome.includes('MEDICINA')) return 'medical_services';
+    
+        if (nome.includes('ENGENHARIA')) return 'engineering';
+        
+        if (nome.includes('FILOSOFIA')) return 'psychology';
+        if (nome.includes('HISTÓRIA')) return 'history';
+        
+        if (nome.includes('FÍSICA')) return 'science';
+        if (nome.includes('GEOGRAFIA')) return 'public';
+        if (nome.includes('GEOLOGIA')) return 'landscape';
+        
+        if (nome.includes('MATEMÁTICA') || nome.includes('ESTATÍSTICA')) return 'calculate';
+        
         if (nome.includes('MÚSICA')) return 'music_note';
-        if (nome.includes('ADMINISTRAÇÃO') || nome.includes('CIÊNCIAS CONTÁBEIS')) return 'account_balance';
-        if (nome.includes('ECONÔMICAS') || nome.includes('ECONOMIA')) return 'trending_up';
-        if (nome.includes('JORNALISMO') || nome.includes('COMUNICAÇÃO')) return 'newspaper';
-        if (nome.includes('FARMÁCIA')) return 'medication';
-        if (nome.includes('NUTRIÇÃO')) return 'nutrition';
-        if (nome.includes('PSICOLOGIA')) return 'neurology';
-        if (nome.includes('AGRONOMIA')) return 'eco';
+        if (nome.includes('NUTRIÇÃO')) return 'restaurant';
+        if (nome.includes('OCEANOGRAFIA')) return 'tsunami';
+        if (nome.includes('ODONTOLOGIA')) return 'dentistry';
+        if (nome.includes('GEMOLOGIA')) return 'diamond';
+        
+        if (nome.includes('PEDAGOGIA')) return 'school';
+        if (nome.includes('PSICOLOGIA')) return 'psychology';
+        if (nome.includes('QUÍMICA')) return 'science';
+        if (nome.includes('SERVIÇO SOCIAL')) return 'groups';
+        if (nome.includes('TERAPIA OCUPACIONAL')) return 'accessibility_new';
+        if (nome.includes('ZOOTECNIA')) return 'pets';
         return 'book_4';
     }
     function getLogoParaCurso(instituicao) {
